@@ -5,7 +5,7 @@ export default function Header() {
   const { user, signIn, signOut } = useAuth();
   return (
     <header>
-      <div className="wordmark">Subfolio<small>ALPHA</small></div>
+      <div className="wordmark">Digital Sub Fee Tracker<small>ALPHA</small></div>
       {user ? (
         <button className="login-btn ghost" onClick={signOut}>{user.displayName} · 로그아웃</button>
       ) : (

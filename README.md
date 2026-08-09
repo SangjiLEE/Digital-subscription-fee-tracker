@@ -1,4 +1,4 @@
-# Digital Subscription Fee Tracker (Subfolio)
+# Digital Subscription Fee Tracker
 
 넷플릭스부터 AI 구독까지 — 매달 나가는 디지털 구독료와 갱신 일정을 한눈에 보는 웹 서비스.
 

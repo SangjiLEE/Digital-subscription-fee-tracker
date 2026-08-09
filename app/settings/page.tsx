@@ -41,11 +41,11 @@ export default function SettingsPage() {
       <section>
         <div className="sec-head"><h2>영수증 포워딩</h2><span className="hint">이 주소로 전달하면 자동 감지</span></div>
         <div className="set-card">
-          <div className="fwd"><span>sangji-x7f2@in.subfolio.app</span><button className="mini">복사</button></div>
+          <div className="fwd"><span>sangji-x7f2@in.subfeetracker.app</span><button className="mini">복사</button></div>
         </div>
       </section>
 
-      <footer>Subfolio alpha</footer>
+      <footer>Digital Sub Fee Tracker alpha</footer>
     </main>
   );
 }

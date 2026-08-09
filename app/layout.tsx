@@ -8,7 +8,7 @@ import WelcomeModal from '@/components/WelcomeModal';
 import AddModal from '@/components/AddModal';
 
 export const metadata: Metadata = {
-  title: 'Subfolio — 디지털 구독료 트래커',
+  title: 'Digital Sub Fee Tracker — 디지털 구독료 트래커',
   description: '넷플릭스부터 AI 구독까지, 매달 나가는 구독료와 갱신 일정을 한눈에.',
 };
 

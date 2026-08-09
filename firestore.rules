@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 유저 데이터: 본인만 읽기/쓰기
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // 공용 카탈로그: 로그인 유저 읽기 전용 (쓰기는 관리 도구에서만)
+    match /services/{serviceId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /fxRates/{date} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

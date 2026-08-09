@@ -1,10 +1,18 @@
 'use client';
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  collection, addDoc, onSnapshot, query, orderBy, serverTimestamp,
+} from 'firebase/firestore';
+import { db } from './firebase';
+import { useAuth } from './auth';
 import type { Currency } from './types';
 
 /**
- * 목업 상태를 담는 인메모리 스토어.
- * Firestore 연동 시 subs/oneTime는 users/{uid}/subscriptions 구독으로 교체.
+ * 구독 데이터 스토어.
+ * - 비로그인: 데모 시드 데이터 (인메모리, 새로고침 시 초기화)
+ * - 로그인: users/{uid}/subs·oneTime 실시간 구독 (Firestore)
+ * UI 행 타입(SubRow)은 목업 유래의 축약형 — docs/schema.md의 전체
+ * Subscription 스키마로의 마이그레이션은 카탈로그 연동 때 진행.
  */
 export type Cat = 'ai' | 'dev' | 'ent' | 'sto' | 'etc';
 export const CATNAME: Record<Cat, string> = {
@@ -40,6 +48,7 @@ const SEED_ONETIME: OneTimeRow[] = [
 interface Store {
   cur: Currency; setCur: (c: Currency) => void;
   subs: SubRow[]; oneTime: OneTimeRow[];
+  isDemo: boolean;                    // true = 비로그인 데모 데이터 표시 중
   addSub: (s: SubRow) => void;
   addOneTime: (o: OneTimeRow) => void;
   modalOpen: boolean; setModalOpen: (v: boolean) => void;
@@ -48,15 +57,50 @@ interface Store {
 const Ctx = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [cur, setCur] = useState<Currency>('JPY');
   const [subs, setSubs] = useState<SubRow[]>(SEED_SUBS);
   const [oneTime, setOneTime] = useState<OneTimeRow[]>(SEED_ONETIME);
   const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setSubs(SEED_SUBS);
+      setOneTime(SEED_ONETIME);
+      return;
+    }
+    const subsQ = query(collection(db, 'users', user.uid, 'subs'), orderBy('createdAt'));
+    const oneQ = query(collection(db, 'users', user.uid, 'oneTime'), orderBy('createdAt'));
+    const unsub1 = onSnapshot(subsQ,
+      snap => setSubs(snap.docs.map(d => d.data() as SubRow)),
+      e => console.error('subs 구독 실패:', e.code));
+    const unsub2 = onSnapshot(oneQ,
+      snap => setOneTime(snap.docs.map(d => d.data() as OneTimeRow)),
+      e => console.error('oneTime 구독 실패:', e.code));
+    return () => { unsub1(); unsub2(); };
+  }, [user]);
+
+  const addSub = (s: SubRow) => {
+    if (user) {
+      addDoc(collection(db, 'users', user.uid, 'subs'), { ...s, createdAt: serverTimestamp() })
+        .catch(e => { console.error('저장 실패:', e.code); alert('저장에 실패했습니다.'); });
+    } else {
+      setSubs(p => [...p, s]);
+    }
+  };
+  const addOneTime = (o: OneTimeRow) => {
+    if (user) {
+      addDoc(collection(db, 'users', user.uid, 'oneTime'), { ...o, createdAt: serverTimestamp() })
+        .catch(e => { console.error('저장 실패:', e.code); alert('저장에 실패했습니다.'); });
+    } else {
+      setOneTime(p => [...p, o]);
+    }
+  };
+
   return (
     <Ctx.Provider value={{
-      cur, setCur, subs, oneTime,
-      addSub: s => setSubs(p => [...p, s]),
-      addOneTime: o => setOneTime(p => [...p, o]),
+      cur, setCur, subs, oneTime, isDemo: !user,
+      addSub, addOneTime,
       modalOpen, setModalOpen,
     }}>{children}</Ctx.Provider>
   );
