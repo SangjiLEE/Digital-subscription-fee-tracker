@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SYM } from '@/lib/fx';
 import { useStore, type Cat } from '@/lib/store';
@@ -21,8 +21,13 @@ const MINICAT: CatalogSvc[] = [
 type CycleV = 'month' | 'year';
 type RenewV = 'auto' | 'manual' | 'one';
 
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 export default function AddModal() {
-  const { modalOpen, setModalOpen, addSub, addOneTime } = useStore();
+  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub } = useStore();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -32,7 +37,20 @@ export default function AddModal() {
   const [curSel, setCurSel] = useState<Currency>('JPY');
   const [cycle, setCycle] = useState<CycleV>('month');
   const [renew, setRenew] = useState<RenewV>('auto');
-  const [date, setDate] = useState('2026-08-09');
+  const [date, setDate] = useState(todayStr());
+
+  // 수정 모드: 대상 구독으로 폼 프리필
+  useEffect(() => {
+    if (editing && modalOpen) {
+      setName(editing.name);
+      setAmt(String(editing.amt));
+      setCurSel(editing.c);
+      setCycle(editing.cycle);
+      setRenew(editing.renew === 'manual' || editing.plan.includes('수동갱신') ? 'manual' : 'auto');
+      setDate(editing.anchor ?? todayStr());
+      setSvc(null); setPlan(null);
+    }
+  }, [editing, modalOpen]);
 
   if (!modalOpen) return null;
 
@@ -40,7 +58,7 @@ export default function AddModal() {
 
   const reset = () => {
     setName(''); setSvc(null); setPlan(null); setAmt('');
-    setCurSel('JPY'); setCycle('month'); setRenew('auto'); setDate('2026-08-09');
+    setCurSel('JPY'); setCycle('month'); setRenew('auto'); setDate(todayStr());
   };
   const close = () => { setModalOpen(false); reset(); };
 
@@ -54,16 +72,27 @@ export default function AddModal() {
     if (renew === 'one') {
       addOneTime({ name: name.trim(), note: `${d.getMonth() + 1}/${d.getDate()} 결제`,
         amt: amount, c: curSel, init: name.trim()[0].toUpperCase() });
+      close(); router.push('/list');
+      return;
+    }
+    const nm = new Date(d);
+    nm.setMonth(nm.getMonth() + (cycle === 'year' ? 12 : 1)); // TODO: D7 월말 클램프
+    const next = cycle === 'year'
+      ? `${nm.getFullYear()}/${nm.getMonth() + 1}/${nm.getDate()}`   // 연결제는 연도 표기
+      : `${nm.getMonth() + 1}/${nm.getDate()}`;
+    const base = {
+      name: name.trim(), amt: amount, c: curSel, cycle, next,
+      anchor: date, renew: renew === 'manual' ? 'manual' as const : 'auto' as const,
+      init: name.trim()[0].toUpperCase(),
+    };
+    if (editing) {
+      updateSub(editing.id, {
+        ...base,
+        plan: plan ? plan.n : editing.plan.replace(' · 수동갱신', ''),
+        cat: svc ? svc.cat : editing.cat,
+      });
     } else {
-      const nm = new Date(d);
-      nm.setMonth(nm.getMonth() + (cycle === 'year' ? 12 : 1)); // TODO: D7 월말 클램프
-      const next = cycle === 'year'
-        ? `${nm.getFullYear()}/${nm.getMonth() + 1}/${nm.getDate()}`   // 연결제는 연도 표기
-        : `${nm.getMonth() + 1}/${nm.getDate()}`;
-      addSub({ name: name.trim(),
-        plan: (plan ? plan.n : '커스텀') + (renew === 'manual' ? ' · 수동갱신' : ''),
-        amt: amount, c: curSel, cat: svc ? svc.cat : 'etc', cycle, next,
-        init: name.trim()[0].toUpperCase() });
+      addSub({ ...base, plan: plan ? plan.n : '커스텀', cat: svc ? svc.cat : 'etc' });
     }
     close(); router.push('/list');
   };
@@ -72,7 +101,7 @@ export default function AddModal() {
     <div className="overlay" onClick={e => { if (e.target === e.currentTarget) close(); }}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
         <div className="m-head">
-          <h3 id="mTitle">구독 등록</h3>
+          <h3 id="mTitle">{editing ? '구독 수정' : '구독 등록'}</h3>
           <button className="m-close" onClick={close} aria-label="닫기">×</button>
         </div>
 
@@ -129,14 +158,15 @@ export default function AddModal() {
         <div className="fld">
           <label>갱신 유형</label>
           <div className="seg">
-            {([['auto', '자동갱신'], ['manual', '수동갱신'], ['one', '일회성']] as [RenewV, string][]).map(([v, l]) => (
+            {(([['auto', '자동갱신'], ['manual', '수동갱신'], ['one', '일회성']] as [RenewV, string][])
+              .filter(([v]) => !editing || v !== 'one')).map(([v, l]) => (
               <button key={v} className={renew === v ? 'on' : ''}
                 onClick={() => setRenew(v)}>{l}</button>
             ))}
           </div>
         </div>
 
-        <button className="m-save" onClick={save}>등록</button>
+        <button className="m-save" onClick={save}>{editing ? '수정 저장' : '등록'}</button>
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 'use client';
-import { useState } from 'react';
-import { MONTHS } from '@/data/months';
+import { useMemo, useState } from 'react';
 import { fmt } from '@/lib/fx';
+import { computeMonths, colTotal } from '@/lib/monthly';
 import { useStore, CATCOLOR } from '@/lib/store';
 
 const CATS = [
-  ['ai', 'AI·LLM'], ['dev', '개발·인프라'], ['ent', '영상·음악'], ['sto', '스토리지'],
+  ['ai', 'AI·LLM'], ['dev', '개발·인프라'], ['ent', '영상·음악'], ['sto', '스토리지'], ['etc', '기타'],
 ] as const;
 
 const PLOT = 108;  // 눈금 상한이 차지하는 막대 최대 높이(px)
@@ -14,10 +14,12 @@ const VBW = 600;    // 추세선 SVG viewBox 폭
 
 /** 과거=실선/미래=빗금 스택 막대 + 클릭 시 월 상세 (D8: 미래는 오늘 환율) */
 export default function MonthChart() {
-  const { cur } = useStore();
+  const { cur, subs, fxDate } = useStore();
   const [sel, setSel] = useState(3); // 기본: 이번 달
-  const totals = MONTHS.map(r => r.ai + r.dev + r.ent + r.sto);
-  const niceMax = Math.ceil(Math.max(...totals) / 5000) * 5000; // 5천 엔 단위 올림
+  // fxDate 의존: 환율 갱신 시 재계산
+  const MONTHS = useMemo(() => computeMonths(subs), [subs, fxDate]);
+  const totals = MONTHS.map(colTotal);
+  const niceMax = Math.max(5000, Math.ceil(Math.max(...totals) / 5000) * 5000); // 5천 엔 단위 올림
   const ticks = [0, niceMax / 2, niceMax];
   const firstFuture = MONTHS.findIndex(r => !r.past);
   const m = MONTHS[sel];
@@ -31,6 +33,14 @@ export default function MonthChart() {
     y: PLOT_H - (t / niceMax) * PLOT,
   }));
   const toStr = (a: typeof pts) => a.map(p => `${p.x},${p.y}`).join(' ');
+
+  if (subs.length === 0) {
+    return (
+      <div className="chart-card">
+        <div className="chart-empty">구독을 등록하면 월별 지출 차트가 여기에 그려져요</div>
+      </div>
+    );
+  }
 
   return (
     <div className="chart-card">
@@ -52,9 +62,10 @@ export default function MonthChart() {
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSel(i); } }}>
                 <span className="bar-val">{fmt(t, cur)}</span>
                 <div className="bar" style={{ height: Math.round((t / niceMax) * PLOT) }}>
-                  {(['ai', 'dev', 'ent', 'sto'] as const).map(k => (
-                    <div key={k} className={`bar-seg ${k}`} style={{ height: `${(row[k] / t) * 100}%` }} />
-                  ))}
+                  {t > 0 && (['ai', 'dev', 'ent', 'sto', 'etc'] as const).map(k =>
+                    row[k] > 0 && (
+                      <div key={k} className={`bar-seg ${k}`} style={{ height: `${(row[k] / t) * 100}%` }} />
+                    ))}
                 </div>
               </div>
             );

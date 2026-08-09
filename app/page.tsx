@@ -1,22 +1,25 @@
 'use client';
+import { useMemo } from 'react';
 import CurrencyToggle from '@/components/CurrencyToggle';
 import MonthChart from '@/components/MonthChart';
 import RenewList from '@/components/RenewList';
-import { MONTHS } from '@/data/months';
 import { fmt } from '@/lib/fx';
+import { computeMonths, colTotal } from '@/lib/monthly';
 import { useStore } from '@/lib/store';
 
 export default function Home() {
-  const { cur } = useStore();
-  const m = MONTHS[3]; // 이번 달
-  const total = m.ai + m.dev + m.ent + m.sto;
+  const { cur, subs, oneTime, fxDate } = useStore();
+  // fxDate 의존: 환율 갱신 시 재계산
+  const months = useMemo(() => computeMonths(subs), [subs, fxDate]);
+  const nowMonth = months[3];                 // 창의 4번째 = 현재 월
+  const total = nowMonth ? colTotal(nowMonth) : 0;
 
   return (
     <main>
       <div className="total">
-        <div className="label">8월 총 구독료</div>
+        <div className="label">{nowMonth?.label} 총 구독료</div>
         <div className="amount">{fmt(total, cur)}</div>
-        <div className="sub">활성 구독 <b>9건</b> · 무료 체험 <b>1건</b></div>
+        <div className="sub">활성 구독 <b>{subs.length}건</b> · 일회성 <b>{oneTime.length}건</b></div>
         <CurrencyToggle />
       </div>
 
@@ -30,7 +33,10 @@ export default function Home() {
         <RenewList />
       </section>
 
-      <footer>실선 = 결제 완료 · 빗금 = 예정 (오늘 환율 기준)</footer>
+      <footer>
+        실선 = 결제 완료 · 빗금 = 예정
+        {' · '}{fxDate ? `환율 ECB ${fxDate} 기준` : '고정 환율 기준'}
+      </footer>
     </main>
   );
 }

@@ -1,36 +1,46 @@
 'use client';
+import { useMemo } from 'react';
 import { fmt, toJPY } from '@/lib/fx';
-import { useStore } from '@/lib/store';
-import type { Currency } from '@/lib/types';
+import { daysUntil, nextChargeDate } from '@/lib/monthly';
+import { useStore, CATCOLOR } from '@/lib/store';
 
-interface Renewal {
-  name: string; plan: string; amt: number; c: Currency;
-  d: number; color: string; init: string; flag?: string;
-}
-const RENEWALS: Renewal[] = [
-  { name: 'Claude', plan: 'Pro · 자동갱신', amt: 20, c: 'USD', d: 3, color: 'var(--c-ai)', init: 'C' },
-  { name: 'Notion', plan: '무료 체험 종료', amt: 12, c: 'USD', d: 5, color: 'var(--c-dev)', init: 'N', flag: '체험 종료' },
-  { name: 'Netflix', plan: '스탠다드 · 자동갱신', amt: 1590, c: 'JPY', d: 6, color: 'var(--c-ent)', init: 'N' },
-  { name: 'example.com', plan: '도메인 · 수동갱신 필요', amt: 1800, c: 'JPY', d: 11, color: 'var(--c-sto)', init: 'D', flag: '수동갱신' },
-];
-
+/** 30일 이내 갱신 예정 구독 (다음 결제일 오름차순) */
 export default function RenewList() {
-  const { cur } = useStore();
+  const { cur, subs } = useStore();
+
+  const upcoming = useMemo(() => subs
+    .map(s => {
+      const d = nextChargeDate(s);
+      return d ? { s, d, days: daysUntil(d) } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null && x.days >= 0 && x.days <= 30)
+    .sort((a, b) => a.days - b.days), [subs]);
+
+  if (!upcoming.length) {
+    return <div className="renew-card"><div className="renew-empty">30일 이내 갱신 예정이 없어요</div></div>;
+  }
+
   return (
     <div className="renew-card">
-      {RENEWALS.map(r => (
-        <div className="renew" key={r.name}>
-          <div className="r-icon" style={{ background: r.color }}>{r.init}</div>
-          <div className="r-body">
-            <div className="r-name">{r.name}</div>
-            <div className="r-meta">{r.flag && <span className="flag">{r.flag} · </span>}{r.plan}</div>
+      {upcoming.map(({ s, days }) => {
+        const manual = s.renew === 'manual' || s.plan.includes('수동갱신');
+        return (
+          <div className="renew" key={s.id}>
+            <div className="r-icon" style={{ background: CATCOLOR[s.cat] }}>{s.init}</div>
+            <div className="r-body">
+              <div className="r-name">{s.name}</div>
+              <div className="r-meta">
+                {manual && <span className="flag">수동갱신 · </span>}
+                {s.plan} · {s.cycle === 'year' ? '연 결제' : '월 결제'}
+              </div>
+            </div>
+            <div className="r-right">
+              <div className="r-amt">{fmt(toJPY(s.amt, s.c), cur)}</div>
+              <div className={`r-day ${days <= 5 ? 'hot' : ''}`}>{days === 0 ? '오늘' : `D-${days}`}</div>
+            </div>
           </div>
-          <div className="r-right">
-            <div className="r-amt">{fmt(toJPY(r.amt, r.c), cur)}</div>
-            <div className={`r-day ${r.d <= 5 ? 'hot' : ''}`}>D-{r.d}</div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
