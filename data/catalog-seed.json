@@ -1,0 +1,308 @@
+{
+  "_meta": {
+    "generatedAt": "2026-08-09",
+    "note": "웹 조사 기반 스냅샷. verification=verified 는 2026년 상반기 이후 복수 출처로 확인된 값, needs_check 는 재확인 필요. JPY는 최소단위=엔(소수 없음), USD는 센트, KRW는 원. taxIncluded: 일본 표시가는 세포함(true), USD 표시가는 세별도(false).",
+    "regionRule": "플랜에 region 필드가 있으면 그 지역 전용 가격. region 없는 플랜은 service.region을 상속. 표시 지역은 prefs.priceRegion(KR/JP/US)이 결정하며 UI 언어(locale)와 독립",
+    "warning": "app-tatsujin.com 등 일부 AI 생성 추정 사이트가 실재하지 않는 요금 개정 정보를 게재함 — 시드 갱신 시 공식 페이지만 신뢰할 것"
+  },
+  "categories": [
+    { "id": "ai_llm", "names": { "ko": "AI·LLM", "ja": "AI・LLM", "en": "AI & LLM" }, "sortOrder": 1 },
+    { "id": "dev_infra", "names": { "ko": "개발·인프라", "ja": "開発・インフラ", "en": "Dev & Infra" }, "sortOrder": 2 },
+    { "id": "cloud_storage", "names": { "ko": "클라우드·스토리지", "ja": "クラウド・ストレージ", "en": "Cloud & Storage" }, "sortOrder": 3 },
+    { "id": "entertainment", "names": { "ko": "영상·음악", "ja": "動画・音楽", "en": "Entertainment" }, "sortOrder": 4 },
+    { "id": "productivity", "names": { "ko": "생산성·업무", "ja": "生産性・仕事", "en": "Productivity" }, "sortOrder": 5 },
+    { "id": "news_content", "names": { "ko": "뉴스·콘텐츠", "ja": "ニュース・コンテンツ", "en": "News & Content" }, "sortOrder": 6 },
+    { "id": "game", "names": { "ko": "게임", "ja": "ゲーム", "en": "Games" }, "sortOrder": 7 },
+    { "id": "health", "names": { "ko": "건강", "ja": "健康", "en": "Health" }, "sortOrder": 8 },
+    { "id": "other", "names": { "ko": "기타", "ja": "その他", "en": "Other" }, "sortOrder": 99 }
+  ],
+  "services": [
+    {
+      "id": "claude",
+      "names": { "ko": "클로드", "ja": "Claude", "en": "Claude" },
+      "categoryId": "ai_llm",
+      "region": "GLOBAL",
+      "domains": ["anthropic.com", "claude.ai", "claude.com"],
+      "alternatives": ["chatgpt", "google-ai"],
+      "verification": "verified",
+      "plans": [
+        { "id": "pro", "names": { "ko": "Pro", "ja": "Pro", "en": "Pro" }, "amountMinor": 2000, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true },
+        { "id": "max-5x", "names": { "ko": "Max 5x", "ja": "Max 5x", "en": "Max 5x" }, "amountMinor": 10000, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true },
+        { "id": "max-20x", "names": { "ko": "Max 20x", "ja": "Max 20x", "en": "Max 20x" }, "amountMinor": 20000, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true }
+      ]
+    },
+    {
+      "id": "chatgpt",
+      "names": { "ko": "챗GPT", "ja": "ChatGPT", "en": "ChatGPT" },
+      "categoryId": "ai_llm",
+      "region": "JP",
+      "domains": ["openai.com", "chatgpt.com"],
+      "alternatives": ["claude", "google-ai"],
+      "verification": "verified",
+      "notes": "2026-01-30부터 일본은 엔화 고정가(Go·Plus·Pro $200 티어). Pro $100 티어는 달러 환산 유지",
+      "plans": [
+        { "id": "go", "names": { "ko": "Go", "ja": "Go", "en": "Go" }, "amountMinor": 1400, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "plus", "names": { "ko": "Plus", "ja": "Plus", "en": "Plus" }, "amountMinor": 3000, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "pro", "names": { "ko": "Pro", "ja": "Pro", "en": "Pro" }, "amountMinor": 30000, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" }
+      ]
+    },
+    {
+      "id": "google-ai",
+      "names": { "ko": "구글 AI (Google One)", "ja": "Google AI（Google One）", "en": "Google AI (Google One)" },
+      "categoryId": "ai_llm",
+      "region": "JP",
+      "domains": ["google.com", "one.google.com"],
+      "alternatives": ["claude", "chatgpt"],
+      "verification": "verified",
+      "notes": "AI Plus 2TB / AI Pro 5TB — 스토리지 포함형 AI 플랜. 순수 스토리지 플랜은 google-one 참조",
+      "plans": [
+        { "id": "ai-plus", "names": { "ko": "AI Plus (2TB)", "ja": "AI Plus（2TB）", "en": "AI Plus (2TB)" }, "amountMinor": 1450, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "ai-pro", "names": { "ko": "AI Pro (5TB)", "ja": "AI Pro（5TB）", "en": "AI Pro (5TB)" }, "amountMinor": 2900, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "github-copilot",
+      "names": { "ko": "깃허브 코파일럿", "ja": "GitHub Copilot", "en": "GitHub Copilot" },
+      "categoryId": "dev_infra",
+      "region": "GLOBAL",
+      "domains": ["github.com"],
+      "alternatives": ["claude"],
+      "verification": "verified",
+      "notes": "2026-06-01부터 AI Credits 기반 종량 과금으로 전환. 표시 가격은 동일하나 크레딧 소진 시 추가 과금 가능",
+      "plans": [
+        { "id": "pro", "names": { "ko": "Pro", "ja": "Pro", "en": "Pro" }, "amountMinor": 1000, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true },
+        { "id": "pro-plus", "names": { "ko": "Pro+", "ja": "Pro+", "en": "Pro+" }, "amountMinor": 3900, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true },
+        { "id": "max", "names": { "ko": "Max", "ja": "Max", "en": "Max" }, "amountMinor": 10000, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "verification": "needs_check" }
+      ]
+    },
+    {
+      "id": "vercel",
+      "names": { "ko": "버셀", "ja": "Vercel", "en": "Vercel" },
+      "categoryId": "dev_infra",
+      "region": "GLOBAL",
+      "domains": ["vercel.com"],
+      "alternatives": [],
+      "verification": "needs_check",
+      "plans": [
+        { "id": "pro", "names": { "ko": "Pro", "ja": "Pro", "en": "Pro" }, "amountMinor": 2000, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "verification": "needs_check" }
+      ]
+    },
+    {
+      "id": "google-one",
+      "names": { "ko": "구글 원", "ja": "Google One", "en": "Google One" },
+      "categoryId": "cloud_storage",
+      "region": "JP",
+      "domains": ["google.com", "one.google.com"],
+      "alternatives": ["icloud", "dropbox"],
+      "verification": "verified",
+      "plans": [
+        { "id": "basic-100gb", "names": { "ko": "Basic (100GB)", "ja": "Basic（100GB）", "en": "Basic (100GB)" }, "amountMinor": 290, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "icloud",
+      "names": { "ko": "아이클라우드+", "ja": "iCloud+", "en": "iCloud+" },
+      "categoryId": "cloud_storage",
+      "region": "JP",
+      "domains": ["apple.com", "icloud.com"],
+      "alternatives": ["google-one", "dropbox"],
+      "verification": "partial",
+      "notes": "2TB ¥1,500은 확인됨 (2024-11 개정 후). 50GB/200GB는 재확인 필요",
+      "plans": [
+        { "id": "50gb", "names": { "ko": "50GB", "ja": "50GB", "en": "50GB" }, "amountMinor": 150, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" },
+        { "id": "200gb", "names": { "ko": "200GB", "ja": "200GB", "en": "200GB" }, "amountMinor": 450, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" },
+        { "id": "2tb", "names": { "ko": "2TB", "ja": "2TB", "en": "2TB" }, "amountMinor": 1500, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "dropbox",
+      "names": { "ko": "드롭박스", "ja": "Dropbox", "en": "Dropbox" },
+      "categoryId": "cloud_storage",
+      "region": "JP",
+      "domains": ["dropbox.com"],
+      "alternatives": ["google-one", "icloud"],
+      "verification": "needs_check",
+      "plans": [
+        { "id": "plus", "names": { "ko": "Plus (2TB)", "ja": "Plus（2TB）", "en": "Plus (2TB)" }, "amountMinor": 1500, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" }
+      ]
+    },
+    {
+      "id": "netflix",
+      "names": { "ko": "넷플릭스", "ja": "Netflix", "en": "Netflix" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["netflix.com"],
+      "alternatives": ["disney-plus", "amazon-prime"],
+      "verification": "verified",
+      "notes": "연간 플랜 없음, 무료 체험 없음",
+      "plans": [
+        { "id": "ads-standard", "names": { "ko": "광고형 스탠다드", "ja": "広告つきスタンダード", "en": "Standard with ads" }, "amountMinor": 890, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "standard", "names": { "ko": "스탠다드", "ja": "スタンダード", "en": "Standard" }, "amountMinor": 1590, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "premium", "names": { "ko": "프리미엄", "ja": "プレミアム", "en": "Premium" }, "amountMinor": 2290, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "kr-ads-standard", "region": "KR", "names": { "ko": "광고형 스탠다드", "ja": "広告つきスタンダード", "en": "Standard with ads" }, "amountMinor": 7000, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "notes": "2025-05 ₩5,500→₩7,000 인상" },
+        { "id": "kr-standard", "region": "KR", "names": { "ko": "스탠다드", "ja": "スタンダード", "en": "Standard" }, "amountMinor": 13500, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "kr-premium", "region": "KR", "names": { "ko": "프리미엄", "ja": "プレミアム", "en": "Premium" }, "amountMinor": 17000, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "us-ads-standard", "region": "US", "names": { "ko": "광고형 스탠다드", "ja": "広告つきスタンダード", "en": "Standard with ads" }, "amountMinor": 899, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "notes": "2026-03월말 전 티어 인상" },
+        { "id": "us-standard", "region": "US", "names": { "ko": "스탠다드", "ja": "スタンダード", "en": "Standard" }, "amountMinor": 1999, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true },
+        { "id": "us-premium", "region": "US", "names": { "ko": "프리미엄", "ja": "プレミアム", "en": "Premium" }, "amountMinor": 2699, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true }
+      ]
+    },
+    {
+      "id": "youtube-premium",
+      "names": { "ko": "유튜브 프리미엄", "ja": "YouTube Premium", "en": "YouTube Premium" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["youtube.com", "google.com"],
+      "alternatives": ["spotify"],
+      "verification": "verified",
+      "notes": "2026-04 미국 인상 발표, 일본은 2026-05 시점 미인상 — 연내 인상 가능성 있어 재확인 권장. iOS 앱 결제는 더 비쌈 (Web/Android 기준가)",
+      "plans": [
+        { "id": "lite", "names": { "ko": "Premium Lite", "ja": "Premium Lite", "en": "Premium Lite" }, "amountMinor": 780, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "individual", "names": { "ko": "개인", "ja": "個人", "en": "Individual" }, "amountMinor": 1280, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "kr-individual", "region": "KR", "names": { "ko": "개인", "ja": "個人", "en": "Individual" }, "amountMinor": 14900, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" },
+        { "id": "us-individual", "region": "US", "names": { "ko": "개인", "ja": "個人", "en": "Individual" }, "amountMinor": 1599, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "verification": "needs_check", "notes": "2026-04 인상 발표(최대 +$2). 인상 후 정확 금액 공식 페이지 재확인 필요" }
+      ]
+    },
+    {
+      "id": "spotify",
+      "names": { "ko": "스포티파이", "ja": "Spotify", "en": "Spotify" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["spotify.com"],
+      "alternatives": ["youtube-premium", "amazon-music"],
+      "verification": "verified",
+      "plans": [
+        { "id": "standard", "names": { "ko": "Premium Standard", "ja": "Premium Standard", "en": "Premium Standard" }, "amountMinor": 1080, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "student", "names": { "ko": "Student", "ja": "Student", "en": "Student" }, "amountMinor": 580, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "duo", "names": { "ko": "Duo", "ja": "Duo", "en": "Duo" }, "amountMinor": 1480, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "family", "names": { "ko": "Family", "ja": "Family", "en": "Family" }, "amountMinor": 1880, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "kr-standard", "region": "KR", "names": { "ko": "Premium 개인", "ja": "Premium 個人", "en": "Premium Individual" }, "amountMinor": 10900, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "kr-student", "region": "KR", "names": { "ko": "학생", "ja": "学生", "en": "Student" }, "amountMinor": 6600, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "us-standard", "region": "US", "names": { "ko": "Premium 개인", "ja": "Premium 個人", "en": "Premium Individual" }, "amountMinor": 1299, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "notes": "2026-02 $11.99→$12.99 인상" },
+        { "id": "us-family", "region": "US", "names": { "ko": "Family", "ja": "Family", "en": "Family" }, "amountMinor": 1999, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "verification": "needs_check" }
+      ]
+    },
+    {
+      "id": "amazon-prime",
+      "names": { "ko": "아마존 프라임", "ja": "Amazonプライム", "en": "Amazon Prime" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["amazon.co.jp", "amazon.com"],
+      "alternatives": ["netflix", "disney-plus"],
+      "verification": "verified",
+      "notes": "Prime Video 광고 없음 옵션 월 ¥390 별도 (2025-04부터)",
+      "plans": [
+        { "id": "monthly", "names": { "ko": "월간", "ja": "月間", "en": "Monthly" }, "amountMinor": 600, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "annual", "names": { "ko": "연간", "ja": "年間", "en": "Annual" }, "amountMinor": 5900, "currency": "JPY", "intervalUnit": "year", "intervalCount": 1, "taxIncluded": true, "annualEquivalentMinor": 5900, "active": true }
+      ]
+    },
+    {
+      "id": "disney-plus",
+      "names": { "ko": "디즈니+", "ja": "ディズニープラス", "en": "Disney+" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["disneyplus.com", "disney.co.jp"],
+      "alternatives": ["netflix", "amazon-prime"],
+      "verification": "verified",
+      "notes": "2026-03-25 요금 개정 반영. 연간 결제 시 2개월분 할인",
+      "plans": [
+        { "id": "standard", "names": { "ko": "스탠다드", "ja": "スタンダード", "en": "Standard" }, "amountMinor": 1250, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "annualEquivalentMinor": 12500, "active": true },
+        { "id": "premium", "names": { "ko": "프리미엄", "ja": "プレミアム", "en": "Premium" }, "amountMinor": 1670, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "annualEquivalentMinor": 16700, "active": true },
+        { "id": "kr-standard", "region": "KR", "names": { "ko": "스탠다드", "ja": "スタンダード", "en": "Standard" }, "amountMinor": 9900, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "kr-premium", "region": "KR", "names": { "ko": "프리미엄", "ja": "プレミアム", "en": "Premium" }, "amountMinor": 13900, "currency": "KRW", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true },
+        { "id": "us-basic-ads", "region": "US", "names": { "ko": "베이식 (광고)", "ja": "ベーシック（広告つき）", "en": "Basic with ads" }, "amountMinor": 999, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "verification": "needs_check" },
+        { "id": "us-premium", "region": "US", "names": { "ko": "프리미엄 (광고 없음)", "ja": "プレミアム（広告なし）", "en": "Premium (no ads)" }, "amountMinor": 1899, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "notes": "2025-10-21 $15.99→$18.99 인상" }
+      ]
+    },
+    {
+      "id": "microsoft-365",
+      "names": { "ko": "마이크로소프트 365", "ja": "Microsoft 365", "en": "Microsoft 365" },
+      "categoryId": "productivity",
+      "region": "JP",
+      "domains": ["microsoft.com"],
+      "alternatives": ["notion"],
+      "verification": "partial",
+      "notes": "2026-07 가격 개정은 법인용 대상. 개인용(Personal)은 2026-01 시점 값 — 재확인 권장",
+      "plans": [
+        { "id": "personal", "names": { "ko": "Personal", "ja": "Personal", "en": "Personal" }, "amountMinor": 2130, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "annualEquivalentMinor": 21300, "active": true }
+      ]
+    },
+    {
+      "id": "notion",
+      "names": { "ko": "노션", "ja": "Notion", "en": "Notion" },
+      "categoryId": "productivity",
+      "region": "GLOBAL",
+      "domains": ["notion.so", "notion.com"],
+      "alternatives": ["microsoft-365"],
+      "verification": "needs_check",
+      "plans": [
+        { "id": "plus", "names": { "ko": "Plus", "ja": "Plus", "en": "Plus" }, "amountMinor": 1200, "currency": "USD", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": false, "active": true, "verification": "needs_check" }
+      ]
+    },
+    {
+      "id": "u-next",
+      "names": { "ko": "U-NEXT", "ja": "U-NEXT", "en": "U-NEXT" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["unext.jp", "video.unext.jp"],
+      "alternatives": ["netflix", "dmm-tv"],
+      "verification": "verified",
+      "notes": "매월 1,200엔분 포인트 부여 → 실질 부담 989엔. 단일 플랜. 초회 31일 무료 체험",
+      "plans": [
+        { "id": "standard", "names": { "ko": "월정액", "ja": "月額プラン", "en": "Monthly" }, "amountMinor": 2189, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "dmm-tv",
+      "names": { "ko": "DMM TV", "ja": "DMM TV", "en": "DMM TV" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["dmm.com", "tv.dmm.com"],
+      "alternatives": ["u-next", "danime"],
+      "verification": "verified",
+      "notes": "2026년 타사 인상 국면에서도 ¥550 유지 (애니메이션 중심)",
+      "plans": [
+        { "id": "premium", "names": { "ko": "프리미엄", "ja": "DMMプレミアム", "en": "Premium" }, "amountMinor": 550, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "danime",
+      "names": { "ko": "d애니메스토어", "ja": "dアニメストア", "en": "d Anime Store" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["docomo.ne.jp", "animestore.docomo.ne.jp"],
+      "alternatives": ["dmm-tv"],
+      "verification": "verified",
+      "plans": [
+        { "id": "standard", "names": { "ko": "월정액", "ja": "月額プラン", "en": "Monthly" }, "amountMinor": 660, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "hulu-jp",
+      "names": { "ko": "훌루 재팬", "ja": "Hulu", "en": "Hulu Japan" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["hulu.jp", "happyon.jp"],
+      "alternatives": ["netflix", "u-next"],
+      "verification": "needs_check",
+      "notes": "단독 요금 재확인 필요. Hulu|Disney+ 세트는 2026-05-01부터 ¥1,890로 개정 확인됨",
+      "plans": [
+        { "id": "standard", "names": { "ko": "월정액", "ja": "月額プラン", "en": "Monthly" }, "amountMinor": 1026, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" },
+        { "id": "disney-set", "names": { "ko": "Hulu|Disney+ 세트", "ja": "Hulu | ディズニープラス セット", "en": "Hulu + Disney+ Bundle" }, "amountMinor": 1890, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true }
+      ]
+    },
+    {
+      "id": "abema",
+      "names": { "ko": "아베마 프리미엄", "ja": "ABEMAプレミアム", "en": "ABEMA Premium" },
+      "categoryId": "entertainment",
+      "region": "JP",
+      "domains": ["abema.tv"],
+      "alternatives": ["u-next", "hulu-jp"],
+      "verification": "needs_check",
+      "notes": "단독 요금 공식 페이지 재확인 필요 (세트 상품 다수로 역산 불확실)",
+      "plans": [
+        { "id": "premium", "names": { "ko": "프리미엄", "ja": "プレミアム", "en": "Premium" }, "amountMinor": 1080, "currency": "JPY", "intervalUnit": "month", "intervalCount": 1, "taxIncluded": true, "active": true, "verification": "needs_check" }
+      ]
+    }
+  ]
+}
