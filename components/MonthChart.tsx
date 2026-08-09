@@ -9,6 +9,8 @@ const CATS = [
 ] as const;
 
 const PLOT = 108;  // 눈금 상한이 차지하는 막대 최대 높이(px)
+const PLOT_H = 128; // .plot 전체 높이(px) — CSS와 동기
+const VBW = 600;    // 추세선 SVG viewBox 폭
 
 /** 과거=실선/미래=빗금 스택 막대 + 클릭 시 월 상세 (D8: 미래는 오늘 환율) */
 export default function MonthChart() {
@@ -20,6 +22,15 @@ export default function MonthChart() {
   const firstFuture = MONTHS.findIndex(r => !r.past);
   const m = MONTHS[sel];
   const total = totals[sel];
+  const delta = sel > 0 ? total - totals[sel - 1] : null;
+
+  // 추세선 좌표: 각 막대 상단 중앙
+  const pts = totals.map((t, i) => ({
+    xPct: ((i + 0.5) / MONTHS.length) * 100,
+    x: ((i + 0.5) / MONTHS.length) * VBW,
+    y: PLOT_H - (t / niceMax) * PLOT,
+  }));
+  const toStr = (a: typeof pts) => a.map(p => `${p.x},${p.y}`).join(' ');
 
   return (
     <div className="chart-card">
@@ -49,6 +60,17 @@ export default function MonthChart() {
             );
           })}
         </div>
+        <svg className="trend" viewBox={`0 0 ${VBW} ${PLOT_H}`} preserveAspectRatio="none" aria-hidden="true">
+          <polyline points={toStr(pts.slice(0, firstFuture < 0 ? pts.length : firstFuture))} />
+          {firstFuture > 0 && (
+            <polyline className="proj" points={toStr(pts.slice(firstFuture - 1))} />
+          )}
+        </svg>
+        <div className="trend-dots">
+          {pts.map((p, i) => (
+            <i key={i} className="trend-dot" style={{ left: `${p.xPct}%`, top: p.y }} />
+          ))}
+        </div>
         {firstFuture > 0 && (
           <div className="today-seam"
             style={{ left: `calc(38px + (100% - 38px) * ${firstFuture / MONTHS.length})` }}>
@@ -69,6 +91,12 @@ export default function MonthChart() {
           <span>{m.label} 내역<span className="tag">{m.past ? '결제 완료' : '예정 · 오늘 환율 기준'}</span></span>
           <b>{fmt(total, cur)}</b>
         </div>
+        {delta !== null && delta !== 0 && (
+          <div className={`md-delta ${delta > 0 ? 'up' : 'down'}`}>
+            전월 대비 {delta > 0 ? '▲' : '▼'} {fmt(Math.abs(delta), cur)} {delta > 0 ? '증가' : '감소'}
+          </div>
+        )}
+        {delta === 0 && <div className="md-delta flat">전월과 동일</div>}
         {CATS.map(([k, label]) => (
           <div className="md-row" key={k}>
             <span><i className="dot" style={{ background: CATCOLOR[k] }} />{label}</span>
