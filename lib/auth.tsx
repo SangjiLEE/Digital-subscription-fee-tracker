@@ -1,7 +1,16 @@
 'use client';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut as fbSignOut } from 'firebase/auth';
+import {
+  GoogleAuthProvider, onAuthStateChanged, signInWithCredential,
+  signInWithPopup, signInWithRedirect, signOut as fbSignOut,
+} from 'firebase/auth';
 import { auth, googleProvider } from './firebase';
+
+const GSI_SRC = 'https://accounts.google.com/gsi/client';
+// OAuth 웹 클라이언트 ID — 공개 식별자 (로그인 URL에 그대로 노출되는 값)
+const GSI_CLIENT_ID = '974181000422-pam8ljdofu253e3kgsv3fvpe3rs3bkhv.apps.googleusercontent.com';
+
+declare global { interface Window { google?: any } }
 
 interface User { uid: string; displayName: string; }
 interface AuthCtx {
@@ -12,6 +21,38 @@ interface AuthCtx {
 }
 
 const Ctx = createContext<AuthCtx>({ user: null, loading: true, signIn: () => {}, signOut: () => {} });
+
+function reportFail(e: { code?: string } | undefined) {
+  console.error('로그인 실패:', e?.code);
+  alert(`로그인에 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류 코드: ${e?.code ?? '알 수 없음'})`);
+}
+
+/** 팝업 방식 (차단 시 리다이렉트 폴백) */
+function popupSignIn() {
+  signInWithPopup(auth, googleProvider).catch(e => {
+    if (e?.code === 'auth/popup-blocked') {
+      signInWithRedirect(auth, googleProvider);
+      return;
+    }
+    if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
+      reportFail(e);
+    }
+  });
+}
+
+/** GIS 스크립트 로드 보장 후 콜백 */
+function withGsi(cb: () => void, onError: () => void) {
+  if (window.google?.accounts?.id) { cb(); return; }
+  let s = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`);
+  if (!s) {
+    s = document.createElement('script');
+    s.src = GSI_SRC;
+    s.async = true;
+    document.head.appendChild(s);
+  }
+  s.addEventListener('load', cb, { once: true });
+  s.addEventListener('error', onError, { once: true });
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -24,21 +65,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /**
+   * 1순위: Google One Tap (FedCM) — 브라우저 내장 UI라 팝업 차단기/확장의
+   * 영향을 받지 않는다. 표시 불가(쿨다운·미로그인 등)면 팝업 방식 폴백.
+   */
   const signIn = () => {
-    signInWithPopup(auth, googleProvider).catch(e => {
-      // 팝업 차단 환경(모바일 브라우저 등) → 리다이렉트 방식으로 폴백
-      if (e?.code === 'auth/popup-blocked') {
-        signInWithRedirect(auth, googleProvider);
-        return;
-      }
-      // 사용자가 팝업을 닫은 경우는 조용히 무시
-      if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
-        console.error('로그인 실패:', e?.code);
-        alert(`로그인에 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류 코드: ${e?.code ?? '알 수 없음'})`);
-      }
-    });
+    withGsi(() => {
+      const gid = window.google.accounts.id;
+      gid.initialize({
+        client_id: GSI_CLIENT_ID,
+        use_fedcm_for_prompt: true,
+        callback: (resp: { credential: string }) => {
+          signInWithCredential(auth, GoogleAuthProvider.credential(resp.credential))
+            .catch(reportFail);
+        },
+      });
+      gid.prompt((moment: any) => {
+        const skipped = moment?.isSkippedMoment?.() || moment?.isNotDisplayed?.();
+        if (skipped) popupSignIn();
+      });
+    }, popupSignIn);
   };
-  const signOut = () => { fbSignOut(auth); };
+
+  const signOut = () => {
+    window.google?.accounts?.id?.disableAutoSelect?.();
+    fbSignOut(auth);
+  };
 
   return <Ctx.Provider value={{ user, loading, signIn, signOut }}>{children}</Ctx.Provider>;
 }

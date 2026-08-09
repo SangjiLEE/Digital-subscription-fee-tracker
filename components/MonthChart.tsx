@@ -8,37 +8,60 @@ const CATS = [
   ['ai', 'AI·LLM'], ['dev', '개발·인프라'], ['ent', '영상·음악'], ['sto', '스토리지'],
 ] as const;
 
+const PLOT = 108;  // 눈금 상한이 차지하는 막대 최대 높이(px)
+
 /** 과거=실선/미래=빗금 스택 막대 + 클릭 시 월 상세 (D8: 미래는 오늘 환율) */
 export default function MonthChart() {
   const { cur } = useStore();
   const [sel, setSel] = useState(3); // 기본: 이번 달
-  const max = Math.max(...MONTHS.map(m => m.ai + m.dev + m.ent + m.sto));
+  const totals = MONTHS.map(r => r.ai + r.dev + r.ent + r.sto);
+  const niceMax = Math.ceil(Math.max(...totals) / 5000) * 5000; // 5천 엔 단위 올림
+  const ticks = [0, niceMax / 2, niceMax];
+  const firstFuture = MONTHS.findIndex(r => !r.past);
   const m = MONTHS[sel];
-  const total = m.ai + m.dev + m.ent + m.sto;
+  const total = totals[sel];
 
   return (
     <div className="chart-card">
-      <div className={`bars ${sel !== null ? 'has-sel' : ''}`}>
-        {MONTHS.map((row, i) => {
-          const t = row.ai + row.dev + row.ent + row.sto;
-          const h = Math.round((t / max) * 96);
-          return (
-            <div key={row.label}
-              className={`bar-col ${row.past ? '' : 'future'} ${i === sel ? 'sel' : ''}`}
-              role="button" tabIndex={0} aria-label={`${row.label} 상세 보기`}
-              onClick={() => setSel(i)}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSel(i); } }}>
-              <span className="bar-val">{fmt(t, cur)}</span>
-              <div className="bar" style={{ height: h }}>
-                {(['ai', 'dev', 'ent', 'sto'] as const).map(k => (
-                  <div key={k} className={`bar-seg ${k}`} style={{ height: `${(row[k] / t) * 100}%` }} />
-                ))}
+      <div className="plot">
+        {ticks.map(v => (
+          <div key={v} className={`gridline ${v === 0 ? 'zero' : ''}`}
+            style={{ bottom: (v / niceMax) * PLOT }}>
+            <span>{v === 0 ? '0' : fmt(v, cur)}</span>
+          </div>
+        ))}
+        <div className="bars">
+          {MONTHS.map((row, i) => {
+            const t = totals[i];
+            return (
+              <div key={row.label}
+                className={`bar-col ${row.past ? '' : 'future'} ${i === sel ? 'sel' : ''}`}
+                role="button" tabIndex={0} aria-label={`${row.label} 상세 보기`}
+                onClick={() => setSel(i)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSel(i); } }}>
+                <span className="bar-val">{fmt(t, cur)}</span>
+                <div className="bar" style={{ height: Math.round((t / niceMax) * PLOT) }}>
+                  {(['ai', 'dev', 'ent', 'sto'] as const).map(k => (
+                    <div key={k} className={`bar-seg ${k}`} style={{ height: `${(row[k] / t) * 100}%` }} />
+                  ))}
+                </div>
               </div>
-              <span className="bar-label">{row.label}</span>
-            </div>
-          );
-        })}
-        <div className="today-seam"><span>오늘</span></div>
+            );
+          })}
+        </div>
+        {firstFuture > 0 && (
+          <div className="today-seam"
+            style={{ left: `calc(38px + (100% - 38px) * ${firstFuture / MONTHS.length})` }}>
+            <span>오늘</span>
+          </div>
+        )}
+      </div>
+      <div className="bar-labels">
+        {MONTHS.map((row, i) => (
+          <span key={row.label} className={`${row.past ? '' : 'future'} ${i === sel ? 'sel' : ''}`}>
+            {row.label}
+          </span>
+        ))}
       </div>
 
       <div className="month-detail">

@@ -79,33 +79,40 @@
   .sec-head .hint{font-size:11px;color:var(--ink-soft)}
   /* ---------- 그래프 ---------- */
   .chart-card{background:var(--card);border-radius:var(--radius);padding:16px 14px 12px;border:1px solid var(--line)}
-  .bars{display:flex;align-items:flex-end;gap:10px;height:150px;position:relative}
-  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
-  .bar{width:100%;max-width:34px;display:flex;flex-direction:column-reverse;gap:2px;border-radius:5px 5px 2px 2px;overflow:hidden}
+  .plot{position:relative;height:128px;margin-top:8px}
+  .gridline{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+  .gridline.zero{border-top-color:#C9D2DC}
+  .gridline>span{
+    position:absolute;left:0;top:-13px;font-size:9px;color:var(--ink-soft);
+    font-family:var(--num);font-variant-numeric:tabular-nums;
+  }
+  .bars{position:absolute;top:0;bottom:0;left:38px;right:0;display:flex;align-items:flex-end;gap:10px}
+  .bar-col{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    gap:4px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .bar{
+    width:100%;max-width:32px;display:flex;flex-direction:column-reverse;gap:2px;
+    border-radius:4px 4px 0 0;overflow:hidden;transition:box-shadow .12s;
+  }
   .bar-seg{width:100%;min-height:3px}
   .bar-seg.ai{background:var(--c-ai)} .bar-seg.dev{background:var(--c-dev)}
   .bar-seg.ent{background:var(--c-ent)} .bar-seg.sto{background:var(--c-sto)}
   .future .bar-seg{
     background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 3px,transparent 3px 7px);
-    opacity:.75;
   }
   .bar-val{font-size:10px;color:var(--ink-soft);font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap}
   .bar-col.sel .bar-val{color:var(--ink);font-weight:600}
-  .bar-label{font-size:11px;color:var(--ink-soft);font-family:var(--num)}
-  .future .bar-label::after{content:" 예정";font-size:9px}
-  .today-seam{
-    position:absolute;top:-6px;bottom:18px;width:0;
-    border-left:2px dashed var(--warn);left:calc(50% + 5px);
-  }
+  .bar-col.sel .bar{box-shadow:0 0 0 2px var(--card),0 0 0 3px var(--ink)}
+  .bar-labels{display:flex;gap:10px;padding-left:38px;margin-top:6px}
+  .bar-labels span{flex:1;text-align:center;font-size:11px;color:var(--ink-soft);font-family:var(--num)}
+  .bar-labels span.future::after{content:" 예정";font-size:9px}
+  .bar-labels span.sel{color:var(--ink);font-weight:600}
+  .today-seam{position:absolute;top:-4px;bottom:0;width:0;border-left:2px dashed var(--warn)}
   .today-seam span{
-    position:absolute;top:-4px;left:-16px;font-size:9px;color:var(--warn);
-    background:var(--card);padding:0 3px;font-weight:600;letter-spacing:.05em;
+    position:absolute;top:-4px;left:4px;font-size:9px;color:var(--warn);
+    background:var(--card);padding:0 2px;font-weight:600;letter-spacing:.05em;white-space:nowrap;
   }
-  .bar-col{cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .bar-col .bar{transition:box-shadow .12s,opacity .12s}
-  .bars.has-sel .bar-col:not(.sel) .bar{opacity:.45}
-  .bar-col.sel .bar{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--ink)}
-  .bar-col.sel .bar-label{color:var(--ink);font-weight:600}
   .month-detail{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
   .md-head{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;margin-bottom:6px}
   .md-head b{font-family:var(--num);font-size:16px;font-variant-numeric:tabular-nums}
