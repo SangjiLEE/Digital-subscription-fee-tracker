@@ -21,16 +21,17 @@ export default function MonthChart() {
       <div className={`bars ${sel !== null ? 'has-sel' : ''}`}>
         {MONTHS.map((row, i) => {
           const t = row.ai + row.dev + row.ent + row.sto;
-          const h = Math.round((t / max) * 118);
+          const h = Math.round((t / max) * 96);
           return (
             <div key={row.label}
               className={`bar-col ${row.past ? '' : 'future'} ${i === sel ? 'sel' : ''}`}
               role="button" tabIndex={0} aria-label={`${row.label} 상세 보기`}
               onClick={() => setSel(i)}
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSel(i); } }}>
+              <span className="bar-val">{fmt(t, cur)}</span>
               <div className="bar" style={{ height: h }}>
                 {(['ai', 'dev', 'ent', 'sto'] as const).map(k => (
-                  <div key={k} className={`seg ${k}`} style={{ height: `${(row[k] / t) * 100}%` }} />
+                  <div key={k} className={`bar-seg ${k}`} style={{ height: `${(row[k] / t) * 100}%` }} />
                 ))}
               </div>
               <span className="bar-label">{row.label}</span>

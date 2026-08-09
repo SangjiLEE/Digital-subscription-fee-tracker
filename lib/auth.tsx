@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 사용자가 팝업을 닫은 경우는 조용히 무시
       if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
         console.error('로그인 실패:', e?.code);
-        alert('로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        alert(`로그인에 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류 코드: ${e?.code ?? '알 수 없음'})`);
       }
     });
   };

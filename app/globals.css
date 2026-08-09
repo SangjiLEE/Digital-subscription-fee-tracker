@@ -8,10 +8,11 @@
     --ink:#1B2735;          /* 본문 잉크 */
     --ink-soft:#5C6B7E;
     --line:#D9DFE6;
+    /* 카테고리 팔레트 — CVD·대비 검증 통과 조합 (validate_palette 기준) */
     --c-ai:#4F7CFF;         /* AI·LLM */
-    --c-dev:#22A695;        /* 개발·인프라 */
-    --c-ent:#F0A331;        /* 영상·음악 */
-    --c-sto:#9AA7B8;        /* 스토리지 */
+    --c-dev:#1F9E8E;        /* 개발·인프라 */
+    --c-ent:#C97A0A;        /* 영상·음악 */
+    --c-sto:#8B72D9;        /* 스토리지 */
     --warn:#D8503F;
     --radius:14px;
     --num:'Space Grotesk',var(--font-body),sans-serif;
@@ -80,14 +81,16 @@
   .chart-card{background:var(--card);border-radius:var(--radius);padding:16px 14px 12px;border:1px solid var(--line)}
   .bars{display:flex;align-items:flex-end;gap:10px;height:150px;position:relative}
   .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
-  .bar{width:100%;max-width:34px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 3px 3px;overflow:hidden}
-  .seg{width:100%}
-  .seg.ai{background:var(--c-ai)} .seg.dev{background:var(--c-dev)}
-  .seg.ent{background:var(--c-ent)} .seg.sto{background:var(--c-sto)}
-  .future .seg{
+  .bar{width:100%;max-width:34px;display:flex;flex-direction:column-reverse;gap:2px;border-radius:5px 5px 2px 2px;overflow:hidden}
+  .bar-seg{width:100%;min-height:3px}
+  .bar-seg.ai{background:var(--c-ai)} .bar-seg.dev{background:var(--c-dev)}
+  .bar-seg.ent{background:var(--c-ent)} .bar-seg.sto{background:var(--c-sto)}
+  .future .bar-seg{
     background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.55) 0 3px,transparent 3px 7px);
     opacity:.75;
   }
+  .bar-val{font-size:10px;color:var(--ink-soft);font-family:var(--num);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .bar-col.sel .bar-val{color:var(--ink);font-weight:600}
   .bar-label{font-size:11px;color:var(--ink-soft);font-family:var(--num)}
   .future .bar-label::after{content:" 예정";font-size:9px}
   .today-seam{
