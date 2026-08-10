@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 import { LANG_NAME, useLang, type Lang } from '@/lib/i18n';
 import { useStore, type Region } from '@/lib/store';
@@ -11,14 +10,12 @@ const LANGS: Lang[] = ['ko', 'ja', 'en'];
 const REGIONS: Region[] = ['JP', 'KR', 'US'];
 
 /**
- * 설정. "준비 중"은 발송/수신 서버 인프라가 필요한 기능 —
- * 가짜 컨트롤 대신 상태를 정직하게 노출한다.
+ * 설정. 선택형 항목은 전부 네이티브 드롭다운으로 통일.
+ * "준비 중"은 발송/수신 서버 인프라가 필요한 기능 — 상태를 정직하게 노출.
  */
 export default function SettingsPage() {
   const { cur, setCur, region, setRegion, renewAlert, setRenewAlert } = useStore();
   const { lang, setLang, t } = useLang();
-  const [open, setOpen] = useState<'cur' | 'lang' | 'region' | null>(null);
-  const toggle = (k: 'cur' | 'lang' | 'region') => setOpen(v => (v === k ? null : k));
   const tz = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : '';
 
   return (
@@ -26,57 +23,24 @@ export default function SettingsPage() {
       <section>
         <div className="sec-head"><h2>{t('secDisplay')}</h2></div>
         <div className="set-card">
-          <button className="set-row set-btn" onClick={() => toggle('cur')}
-            aria-expanded={open === 'cur'} aria-label={t('dispCur')}>
-            {t('dispCur')}
-            <span className="set-val">{SYM[cur]} {t(`cur${cur}`)} {open === 'cur' ? '⌄' : '›'}</span>
-          </button>
-          {open === 'cur' && (
-            <div className="cur-options">
-              <div className="seg">
-                {CURS.map(c => (
-                  <button key={c} className={cur === c ? 'on' : ''}
-                    onClick={() => { setCur(c); setOpen(null); }}>
-                    {SYM[c]} {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <button className="set-row set-btn" onClick={() => toggle('lang')}
-            aria-expanded={open === 'lang'} aria-label={t('uiLang')}>
-            {t('uiLang')}
-            <span className="set-val">{LANG_NAME[lang]} {open === 'lang' ? '⌄' : '›'}</span>
-          </button>
-          {open === 'lang' && (
-            <div className="cur-options">
-              <div className="seg">
-                {LANGS.map(l => (
-                  <button key={l} className={lang === l ? 'on' : ''}
-                    onClick={() => { setLang(l); setOpen(null); }}>
-                    {LANG_NAME[l]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <button className="set-row set-btn" onClick={() => toggle('region')}
-            aria-expanded={open === 'region'} aria-label={t('priceRegion')}>
-            {t('priceRegion')}
-            <span className="set-val">{t(`region${region}`)} {open === 'region' ? '⌄' : '›'}</span>
-          </button>
-          {open === 'region' && (
-            <div className="cur-options">
-              <div className="seg">
-                {REGIONS.map(r => (
-                  <button key={r} className={region === r ? 'on' : ''}
-                    onClick={() => { setRegion(r); setOpen(null); }}>
-                    {t(`region${r}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <label className="set-row">{t('dispCur')}
+            <select className="set-select" value={cur} aria-label={t('dispCur')}
+              onChange={e => setCur(e.target.value as Currency)}>
+              {CURS.map(c => <option key={c} value={c}>{SYM[c]} {t(`cur${c}`)}</option>)}
+            </select>
+          </label>
+          <label className="set-row">{t('uiLang')}
+            <select className="set-select" value={lang} aria-label={t('uiLang')}
+              onChange={e => setLang(e.target.value as Lang)}>
+              {LANGS.map(l => <option key={l} value={l}>{LANG_NAME[l]}</option>)}
+            </select>
+          </label>
+          <label className="set-row">{t('priceRegion')}
+            <select className="set-select" value={region} aria-label={t('priceRegion')}
+              onChange={e => setRegion(e.target.value as Region)}>
+              {REGIONS.map(r => <option key={r} value={r}>{t(`region${r}`)}</option>)}
+            </select>
+          </label>
           <div className="set-row">{t('timezone')}<span className="set-val">{tz} <i className="soon">{t('autoBadge')}</i></span></div>
         </div>
         <p className="set-note">{t('noteDisplay')}</p>

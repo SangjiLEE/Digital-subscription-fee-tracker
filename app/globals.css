@@ -323,3 +323,13 @@
   .ra-day{
     margin-left:auto;font-family:var(--num);font-weight:700;font-size:11px;color:var(--warn);
   }
+
+  /* 설정 드롭다운 */
+  .set-row{cursor:default}
+  label.set-row{cursor:pointer}
+  .set-select{
+    border:none;background:transparent;font-family:inherit;font-size:13px;
+    color:var(--ink-soft);text-align:right;cursor:pointer;padding:4px 0;
+    max-width:60%;
+  }
+  .set-select:focus-visible{outline:2px solid var(--c-ai);outline-offset:2px;border-radius:6px}
