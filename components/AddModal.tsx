@@ -2,20 +2,44 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SYM } from '@/lib/fx';
-import { useStore, type Cat } from '@/lib/store';
+import { useStore, type Cat, type Region } from '@/lib/store';
 import type { Currency } from '@/lib/types';
 
 interface CatalogPlan { n: string; amt: number; c: Currency; }
-interface CatalogSvc { name: string; cat: Cat; plans: CatalogPlan[]; }
+interface CatalogSvc { name: string; cat: Cat; plans: Record<Region, CatalogPlan[]>; }
 
-/** 목업용 미니 카탈로그. 실서비스는 data/catalog-seed.json → Firestore services/ */
+/** 목업용 미니 카탈로그 (지역별 참고가). 실서비스는 data/catalog-seed.json → Firestore services/ */
 const MINICAT: CatalogSvc[] = [
-  { name: 'Claude',  cat: 'ai',  plans: [{ n: 'Pro', amt: 20, c: 'USD' }, { n: 'Max 5x', amt: 100, c: 'USD' }] },
-  { name: 'ChatGPT', cat: 'ai',  plans: [{ n: 'Go', amt: 1400, c: 'JPY' }, { n: 'Plus', amt: 3000, c: 'JPY' }] },
-  { name: 'Netflix', cat: 'ent', plans: [{ n: '광고형 스탠다드', amt: 890, c: 'JPY' }, { n: '스탠다드', amt: 1590, c: 'JPY' }, { n: '프리미엄', amt: 2290, c: 'JPY' }] },
-  { name: 'Spotify', cat: 'ent', plans: [{ n: 'Standard', amt: 1080, c: 'JPY' }, { n: 'Duo', amt: 1480, c: 'JPY' }] },
-  { name: 'iCloud+', cat: 'sto', plans: [{ n: '50GB', amt: 150, c: 'JPY' }, { n: '2TB', amt: 1500, c: 'JPY' }] },
-  { name: 'Notion',  cat: 'dev', plans: [{ n: 'Plus', amt: 12, c: 'USD' }] },
+  { name: 'Claude', cat: 'ai', plans: {
+    JP: [{ n: 'Pro', amt: 20, c: 'USD' }, { n: 'Max 5x', amt: 100, c: 'USD' }],
+    KR: [{ n: 'Pro', amt: 20, c: 'USD' }, { n: 'Max 5x', amt: 100, c: 'USD' }],
+    US: [{ n: 'Pro', amt: 20, c: 'USD' }, { n: 'Max 5x', amt: 100, c: 'USD' }],
+  } },
+  { name: 'ChatGPT', cat: 'ai', plans: {
+    JP: [{ n: 'Go', amt: 1400, c: 'JPY' }, { n: 'Plus', amt: 3000, c: 'JPY' }],
+    KR: [{ n: 'Plus', amt: 20, c: 'USD' }],
+    US: [{ n: 'Plus', amt: 20, c: 'USD' }, { n: 'Pro', amt: 200, c: 'USD' }],
+  } },
+  { name: 'Netflix', cat: 'ent', plans: {
+    JP: [{ n: '광고형 스탠다드', amt: 890, c: 'JPY' }, { n: '스탠다드', amt: 1590, c: 'JPY' }, { n: '프리미엄', amt: 2290, c: 'JPY' }],
+    KR: [{ n: '광고형 스탠다드', amt: 7000, c: 'KRW' }, { n: '스탠다드', amt: 13500, c: 'KRW' }, { n: '프리미엄', amt: 17000, c: 'KRW' }],
+    US: [{ n: 'Standard w/ ads', amt: 7.99, c: 'USD' }, { n: 'Standard', amt: 17.99, c: 'USD' }, { n: 'Premium', amt: 24.99, c: 'USD' }],
+  } },
+  { name: 'Spotify', cat: 'ent', plans: {
+    JP: [{ n: 'Standard', amt: 1080, c: 'JPY' }, { n: 'Duo', amt: 1480, c: 'JPY' }],
+    KR: [{ n: '개인', amt: 10900, c: 'KRW' }, { n: '듀오', amt: 16350, c: 'KRW' }],
+    US: [{ n: 'Individual', amt: 11.99, c: 'USD' }, { n: 'Duo', amt: 16.99, c: 'USD' }],
+  } },
+  { name: 'iCloud+', cat: 'sto', plans: {
+    JP: [{ n: '50GB', amt: 150, c: 'JPY' }, { n: '2TB', amt: 1500, c: 'JPY' }],
+    KR: [{ n: '50GB', amt: 1100, c: 'KRW' }, { n: '2TB', amt: 11100, c: 'KRW' }],
+    US: [{ n: '50GB', amt: 0.99, c: 'USD' }, { n: '2TB', amt: 9.99, c: 'USD' }],
+  } },
+  { name: 'Notion', cat: 'dev', plans: {
+    JP: [{ n: 'Plus', amt: 12, c: 'USD' }],
+    KR: [{ n: 'Plus', amt: 12, c: 'USD' }],
+    US: [{ n: 'Plus', amt: 12, c: 'USD' }],
+  } },
 ];
 
 type CycleV = 'month' | 'year';
@@ -27,7 +51,7 @@ const todayStr = () => {
 };
 
 export default function AddModal() {
-  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft } = useStore();
+  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft, region } = useStore();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -129,7 +153,7 @@ export default function AddModal() {
           </div>
           {svc && (
             <div className="chips">
-              {svc.plans.map(p => (
+              {svc.plans[region].map(p => (
                 <button key={p.n} className={`chip ${plan?.n === p.n ? 'on' : ''}`}
                   onClick={() => pickPlan(p)}>
                   {p.n} <small>{SYM[p.c]}{p.amt.toLocaleString()}</small>
@@ -137,7 +161,7 @@ export default function AddModal() {
               ))}
             </div>
           )}
-          {plan && <div className="ref-note">참고가로 채웠어요 (JP 기준) · 실제 청구액과 다르면 수정하세요</div>}
+          {plan && <div className="ref-note">참고가로 채웠어요 ({region} 기준) · 실제 청구액과 다르면 수정하세요</div>}
         </div>
 
         <div className="fld">

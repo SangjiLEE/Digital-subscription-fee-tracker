@@ -16,6 +16,7 @@ import type { Currency } from './types';
  * Subscription 스키마로의 마이그레이션은 카탈로그 연동 때 진행.
  */
 export type Cat = 'ai' | 'dev' | 'ent' | 'sto' | 'etc';
+export type Region = 'JP' | 'KR' | 'US';
 export const CATNAME: Record<Cat, string> = {
   ai: 'AI·LLM', dev: '개발·인프라', ent: '영상·음악', sto: '클라우드·스토리지', etc: '기타',
 };
@@ -53,6 +54,8 @@ const SEED_ONETIME: OneTimeRow[] = [
 
 interface Store {
   cur: Currency; setCur: (c: Currency) => void;
+  region: Region; setRegion: (r: Region) => void;      // 카탈로그 참고가 지역
+  renewAlert: boolean; setRenewAlert: (v: boolean) => void; // 갱신 임박 앱 내 알림
   subs: SubRow[]; oneTime: OneTimeRow[];
   isDemo: boolean;                    // true = 비로그인 데모 데이터 표시 중
   fxDate: string | null;              // 환율 기준일 (null = 폴백 환율)
@@ -87,6 +90,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const setCur = (c: Currency) => {
     setCurState(c);
     try { localStorage.setItem('displayCur', c); } catch {}
+  };
+  const [region, setRegionState] = useState<Region>('JP');
+  const [renewAlert, setRenewAlertState] = useState(true);
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem('priceRegion');
+      if (r === 'JP' || r === 'KR' || r === 'US') setRegionState(r);
+      const a = localStorage.getItem('renewAlert');
+      if (a !== null) setRenewAlertState(a === '1');
+    } catch {}
+  }, []);
+  const setRegion = (r: Region) => {
+    setRegionState(r);
+    try { localStorage.setItem('priceRegion', r); } catch {}
+  };
+  const setRenewAlert = (v: boolean) => {
+    setRenewAlertState(v);
+    try { localStorage.setItem('renewAlert', v ? '1' : '0'); } catch {}
   };
   const [subs, setSubs] = useState<SubRow[]>(SEED_SUBS);
   const [oneTime, setOneTime] = useState<OneTimeRow[]>(SEED_ONETIME);
@@ -158,7 +179,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      cur, setCur, subs, oneTime, isDemo: !user, fxDate,
+      cur, setCur, region, setRegion, renewAlert, setRenewAlert,
+      subs, oneTime, isDemo: !user, fxDate,
       addSub, updateSub, removeSub, addOneTime, removeOneTime,
       modalOpen, setModalOpen: setModalOpenWrap,
       editing, openEdit, draft, openDraft,

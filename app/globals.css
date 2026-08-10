@@ -310,3 +310,16 @@
   }
   .set-note{font-size:11px;color:var(--ink-soft);margin:8px 4px 0;line-height:1.5}
   .set-link{color:var(--c-ai);text-decoration:underline}
+
+  .cur-options{padding:4px 14px 12px;border-bottom:1px solid var(--line)}
+  .cur-options:last-child{border-bottom:none}
+
+  .renew-alert{
+    margin:10px 20px 0;padding:10px 14px;border-radius:12px;font-size:12px;
+    background:rgba(216,80,63,.08);border:1px solid rgba(216,80,63,.25);color:var(--ink);
+    display:flex;align-items:center;gap:6px;
+  }
+  .renew-alert b{font-weight:700}
+  .ra-day{
+    margin-left:auto;font-family:var(--num);font-weight:700;font-size:11px;color:var(--warn);
+  }
