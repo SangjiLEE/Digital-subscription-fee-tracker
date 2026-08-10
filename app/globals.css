@@ -204,11 +204,12 @@
     padding:9px 10px;display:flex;justify-content:space-between;align-items:center;
     margin:12px 14px;gap:8px;word-break:break-all;
   }
+  .cat-group{margin-top:22px}
+  .sec-head + .cat-group{margin-top:0}
   .cat-label{
     display:flex;justify-content:space-between;align-items:center;
-    font-size:12px;font-weight:600;color:var(--ink-soft);margin:16px 2px 8px;
+    font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 2px 8px;
   }
-  .cat-label:first-child{margin-top:0}
   .cat-label span{display:flex;align-items:center;gap:6px}
   .cat-label b{font-family:var(--num);color:var(--ink);font-variant-numeric:tabular-nums}
   /* ---------- 등록 모달 ---------- */

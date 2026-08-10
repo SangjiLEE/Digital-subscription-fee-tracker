@@ -42,7 +42,7 @@ const PROMPT = `이미지에서 "정기 구독 서비스"의 결제 정보를 �
 - currency: JPY/USD/KRW 중 하나. 그 외 통화 항목은 제외
 - cycle: 월 구독이면 month, 연 구독이면 year. 판단 불가면 month
 - cat: ai(AI·LLM), dev(개발·인프라·생산성 도구), ent(영상·음악·게임), sto(클라우드 저장소), etc(그 외)
-- chargeDate: 이미지에 보이는 결제일·청구일 (YYYY-MM-DD). 없으면 생략
+- chargeDate: 이미지에 보이는 날짜 (YYYY-MM-DD). 다음 갱신일("Renews ...", "Next Billing Date")이 있으면 그것을 우선, 없으면 결제일·청구일. 연도가 없으면 문맥상 가장 가까운 미래 연도로. 날짜가 전혀 없으면 생략
 - confidence: 추출 확신도 0~1
 - 구독이 아닌 일반 구매(물건·음식 등)는 제외. 아무것도 없으면 빈 배열 []`;
 

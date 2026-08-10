@@ -36,7 +36,7 @@ export default function SubList() {
           const subtotal = items.reduce(
             (t, s) => t + toJPY(s.amt, s.c) / (s.cycle === 'year' ? 12 : 1), 0);
           return (
-            <div key={cat}>
+            <div key={cat} className="cat-group">
               <div className="cat-label">
                 <span><i className="dot" style={{ background: CATCOLOR[cat] }} />{CATNAME[cat]} · {items.length}건</span>
                 <b>{fmt(subtotal, cur)}</b>
