@@ -51,7 +51,8 @@ function getModel() {
   if (!model) {
     const ai = getAI(app, { backend: new GoogleAIBackend() });
     model = getGenerativeModel(ai, {
-      model: 'gemini-2.5-flash',
+      // 버전 고정 모델은 신규 프로젝트에서 제공 종료될 수 있음 → 최신 별칭 사용
+      model: 'gemini-flash-latest',
       generationConfig: { responseMimeType: 'application/json', responseSchema: schema },
     });
   }
