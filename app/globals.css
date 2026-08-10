@@ -280,3 +280,17 @@
     line-height:1;padding:6px 8px;margin-left:2px;cursor:pointer;border-radius:6px;
   }
   .row-del:hover{color:#C0392B;background:rgba(192,57,43,.08)}
+
+  /* 사진 인식 */
+  .scan-btn{
+    width:100%;border:1.5px dashed var(--line);background:var(--card);color:var(--ink);
+    font-family:inherit;font-size:13px;font-weight:600;border-radius:var(--radius);
+    padding:14px;cursor:pointer;transition:border-color .15s;
+  }
+  .scan-btn:hover{border-color:var(--c-ai)}
+  .scan-btn:disabled{color:var(--ink-soft);cursor:progress}
+  .scan-notice{font-size:12px;color:var(--ink-soft);padding:10px 4px 0;text-align:center}
+  .scan-item{margin-top:10px}
+  .scan-conf{color:var(--ink-soft);font-size:10px;margin-left:4px}
+  .scan-acts{display:flex;gap:6px}
+  .mini.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}

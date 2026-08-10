@@ -1,4 +1,5 @@
 'use client';
+import ScanBanner from '@/components/ScanBanner';
 import { fmt, toJPY } from '@/lib/fx';
 import { nextChargeDate } from '@/lib/monthly';
 import { useStore, CATNAME, CATCOLOR, type Cat, type SubRow } from '@/lib/store';
@@ -13,7 +14,7 @@ const ORDER: Cat[] = ['ai', 'dev', 'ent', 'sto', 'etc'];
 
 /** 카테고리별 그룹 + 월 환산 소계 (연결제는 /12). 행 탭 = 수정, × = 삭제 */
 export default function SubList() {
-  const { cur, subs, oneTime, isDemo, openEdit, removeSub, removeOneTime } = useStore();
+  const { cur, subs, oneTime, openEdit, removeSub, removeOneTime } = useStore();
 
   const del = (e: React.MouseEvent, s: SubRow) => {
     e.stopPropagation();
@@ -22,15 +23,7 @@ export default function SubList() {
 
   return (
     <>
-      {isDemo && (
-        <section>
-          <div className="sec-head"><h2>확인 대기</h2><span className="hint">포워딩 감지 (데모)</span></div>
-          <div className="inbox-banner">
-            <span>✉ <b>Adobe</b> 영수증이 감지됐어요 · $22.99</span>
-            <button className="mini">확인</button>
-          </div>
-        </section>
-      )}
+      <ScanBanner />
 
       <section>
         <div className="sec-head"><h2>활성 구독</h2><span className="hint">{subs.length}건 · 탭하면 수정</span></div>

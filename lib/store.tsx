@@ -62,6 +62,8 @@ interface Store {
   removeOneTime: (id: string) => void;
   modalOpen: boolean; setModalOpen: (v: boolean) => void;
   editing: SubRow | null; openEdit: (s: SubRow) => void;
+  draft: Partial<Omit<SubRow, 'id'>> | null;      // 사진 인식 결과 프리필용
+  openDraft: (d: Partial<Omit<SubRow, 'id'>>) => void;
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -78,6 +80,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [oneTime, setOneTime] = useState<OneTimeRow[]>(SEED_ONETIME);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<SubRow | null>(null);
+  const [draft, setDraft] = useState<Partial<Omit<SubRow, 'id'>> | null>(null);
   const [fxDate, setFxDate] = useState<string | null>(null);
 
   useEffect(() => { refreshRates().then(d => setFxDate(d)); }, []);
@@ -137,15 +140,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const openEdit = (s: SubRow) => { setEditing(s); setModalOpen(true); };
-  const setModalOpenWrap = (v: boolean) => { setModalOpen(v); if (!v) setEditing(null); };
+  const openEdit = (s: SubRow) => { setDraft(null); setEditing(s); setModalOpen(true); };
+  const openDraft: Store['openDraft'] = d => { setEditing(null); setDraft(d); setModalOpen(true); };
+  const setModalOpenWrap = (v: boolean) => { setModalOpen(v); if (!v) { setEditing(null); setDraft(null); } };
 
   return (
     <Ctx.Provider value={{
       cur, setCur, subs, oneTime, isDemo: !user, fxDate,
       addSub, updateSub, removeSub, addOneTime, removeOneTime,
       modalOpen, setModalOpen: setModalOpenWrap,
-      editing, openEdit,
+      editing, openEdit, draft, openDraft,
     }}>{children}</Ctx.Provider>
   );
 }

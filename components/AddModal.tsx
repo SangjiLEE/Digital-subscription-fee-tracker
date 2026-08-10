@@ -27,7 +27,7 @@ const todayStr = () => {
 };
 
 export default function AddModal() {
-  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub } = useStore();
+  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft } = useStore();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -51,6 +51,18 @@ export default function AddModal() {
       setSvc(null); setPlan(null);
     }
   }, [editing, modalOpen]);
+
+  // 사진 인식 결과 프리필
+  useEffect(() => {
+    if (draft && modalOpen && !editing) {
+      if (draft.name) setName(draft.name);
+      if (draft.amt) setAmt(String(draft.amt));
+      if (draft.c) setCurSel(draft.c);
+      if (draft.cycle) setCycle(draft.cycle);
+      if (draft.anchor) setDate(draft.anchor);
+      setRenew('auto'); setSvc(null); setPlan(null);
+    }
+  }, [draft, modalOpen, editing]);
 
   if (!modalOpen) return null;
 
@@ -92,7 +104,7 @@ export default function AddModal() {
         cat: svc ? svc.cat : editing.cat,
       });
     } else {
-      addSub({ ...base, plan: plan ? plan.n : '커스텀', cat: svc ? svc.cat : 'etc' });
+      addSub({ ...base, plan: plan ? plan.n : '커스텀', cat: svc ? svc.cat : (draft?.cat ?? 'etc') });
     }
     close(); router.push('/list');
   };
