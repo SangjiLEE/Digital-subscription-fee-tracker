@@ -23,7 +23,8 @@ export default function ScanBanner() {
       if (!r.length) setNotice('사진에서 구독 정보를 찾지 못했어요. 금액·서비스명이 보이게 다시 찍어보세요.');
     } catch (err) {
       console.error('스캔 실패:', err);
-      setNotice('인식에 실패했어요. 잠시 후 다시 시도해주세요.');
+      const detail = (err as Error)?.message?.slice(0, 140) ?? '알 수 없는 오류';
+      setNotice(`인식에 실패했어요. 잠시 후 다시 시도해주세요.\n(${detail})`);
     } finally {
       setBusy(false);
     }

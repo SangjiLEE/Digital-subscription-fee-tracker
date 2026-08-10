@@ -289,7 +289,7 @@
   }
   .scan-btn:hover{border-color:var(--c-ai)}
   .scan-btn:disabled{color:var(--ink-soft);cursor:progress}
-  .scan-notice{font-size:12px;color:var(--ink-soft);padding:10px 4px 0;text-align:center}
+  .scan-notice{font-size:12px;color:var(--ink-soft);padding:10px 4px 0;text-align:center;white-space:pre-line;word-break:break-all}
   .scan-item{margin-top:10px}
   .scan-conf{color:var(--ink-soft);font-size:10px;margin-left:4px}
   .scan-acts{display:flex;gap:6px}

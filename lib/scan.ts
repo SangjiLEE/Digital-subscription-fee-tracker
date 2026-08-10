@@ -59,19 +59,25 @@ function getModel() {
   return model;
 }
 
-function toBase64(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res((r.result as string).split(',')[1]);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
+const MAX_DIM = 1600;
+
+/** 큰 사진은 축소 후 JPEG로 재인코딩 — 전송량·비용 절감 + 요청 한도 회피 */
+async function toPayload(file: File): Promise<{ mimeType: string; data: string }> {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, MAX_DIM / Math.max(bmp.width, bmp.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bmp.width * scale);
+  canvas.height = Math.round(bmp.height * scale);
+  canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  bmp.close();
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  return { mimeType: 'image/jpeg', data: dataUrl.split(',')[1] };
 }
 
 export async function scanImage(file: File): Promise<ScanItem[]> {
-  const data = await toBase64(file);
+  const { mimeType, data } = await toPayload(file);
   const res = await getModel().generateContent([
-    { inlineData: { mimeType: file.type || 'image/jpeg', data } },
+    { inlineData: { mimeType, data } },
     { text: PROMPT },
   ]);
   const parsed = JSON.parse(res.response.text()) as ScanItem[];
