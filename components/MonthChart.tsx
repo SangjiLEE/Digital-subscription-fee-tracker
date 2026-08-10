@@ -14,10 +14,10 @@ const VBW = 600;    // 추세선 SVG viewBox 폭
 
 /** 과거=실선/미래=빗금 스택 막대 + 클릭 시 월 상세 (D8: 미래는 오늘 환율) */
 export default function MonthChart() {
-  const { cur, subs, fxDate } = useStore();
+  const { cur, subs, oneTime, fxDate } = useStore();
   const [sel, setSel] = useState(3); // 기본: 이번 달
   // fxDate 의존: 환율 갱신 시 재계산
-  const MONTHS = useMemo(() => computeMonths(subs), [subs, fxDate]);
+  const MONTHS = useMemo(() => computeMonths(subs, oneTime), [subs, oneTime, fxDate]);
   const totals = MONTHS.map(colTotal);
   const niceMax = Math.max(5000, Math.ceil(Math.max(...totals) / 5000) * 5000); // 5천 엔 단위 올림
   const ticks = [0, niceMax / 2, niceMax];

@@ -10,9 +10,11 @@ import { useStore } from '@/lib/store';
 export default function Home() {
   const { cur, subs, oneTime, fxDate } = useStore();
   // fxDate 의존: 환율 갱신 시 재계산
-  const months = useMemo(() => computeMonths(subs), [subs, fxDate]);
+  const months = useMemo(() => computeMonths(subs, oneTime), [subs, oneTime, fxDate]);
+  const subOnly = useMemo(() => computeMonths(subs), [subs, fxDate]);
   const nowMonth = months[3];                 // 창의 4번째 = 현재 월
-  const total = nowMonth ? colTotal(nowMonth) : 0;
+  // 헤드라인 "총 구독료"는 정기 구독만 (일회성은 차트에만 포함)
+  const total = subOnly[3] ? colTotal(subOnly[3]) : 0;
 
   return (
     <main>

@@ -33,6 +33,7 @@ export interface SubRow {
 export interface OneTimeRow {
   id: string;
   name: string; note: string; amt: number; c: Currency; init: string;
+  date?: string;                 // 결제일 'YYYY-MM-DD' (신규 등록분부터 저장)
 }
 
 const SEED_SUBS: SubRow[] = [
@@ -47,7 +48,7 @@ const SEED_SUBS: SubRow[] = [
   { id: 'demo-9', name: 'Google One', plan: 'Basic 100GB', amt: 290, c: 'JPY', cat: 'sto', cycle: 'month', next: '9/1', init: 'G', anchor: '2026-05-01' },
 ];
 const SEED_ONETIME: OneTimeRow[] = [
-  { id: 'demo-o1', name: 'Udemy 강의', note: '7/22 결제', amt: 1800, c: 'JPY', init: 'U' },
+  { id: 'demo-o1', name: 'Udemy 강의', note: '7/22 결제', amt: 1800, c: 'JPY', init: 'U', date: '2026-07-22' },
 ];
 
 interface Store {
@@ -75,7 +76,18 @@ const fail = (op: string) => (e: { code?: string }) => {
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [cur, setCur] = useState<Currency>('JPY');
+  const [cur, setCurState] = useState<Currency>('JPY');
+  // 표시 통화: 기기에 저장 (홈 토글·설정 화면 공용)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('displayCur');
+      if (saved === 'JPY' || saved === 'USD' || saved === 'KRW') setCurState(saved);
+    } catch {}
+  }, []);
+  const setCur = (c: Currency) => {
+    setCurState(c);
+    try { localStorage.setItem('displayCur', c); } catch {}
+  };
   const [subs, setSubs] = useState<SubRow[]>(SEED_SUBS);
   const [oneTime, setOneTime] = useState<OneTimeRow[]>(SEED_ONETIME);
   const [modalOpen, setModalOpen] = useState(false);

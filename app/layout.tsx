@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { StoreProvider } from '@/lib/store';
 import Header from '@/components/Header';
+import HomeOnReload from '@/components/HomeOnReload';
 import TabNav from '@/components/TabNav';
 import WelcomeModal from '@/components/WelcomeModal';
 import AddModal from '@/components/AddModal';
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <StoreProvider>
             <div className="phone">
+              <HomeOnReload />
               <Header />
               {children}
               <TabNav />

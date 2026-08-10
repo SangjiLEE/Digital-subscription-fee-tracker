@@ -67,7 +67,7 @@ export default function SubList() {
       </section>
 
       <section>
-        <div className="sec-head"><h2>일회성 지출</h2><span className="hint">월 총액 미포함</span></div>
+        <div className="sec-head"><h2>일회성 지출</h2><span className="hint">해당 월 지출에 포함 · 구독료 총액 미포함</span></div>
         <div className="sub-card">
           {oneTime.length === 0 && <div className="renew-empty">일회성 지출이 없어요</div>}
           {oneTime.map(o => (

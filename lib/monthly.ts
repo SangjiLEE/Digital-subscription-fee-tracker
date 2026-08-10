@@ -1,5 +1,5 @@
 import { toJPY } from './fx';
-import type { SubRow, Cat } from './store';
+import type { OneTimeRow, SubRow, Cat } from './store';
 
 /**
  * 구독 목록 → 월별 카테고리 지출 집계 (JPY 환산, 오늘 환율 기준 D8).
@@ -19,7 +19,17 @@ function yearNextMonth(next: string): number | null {
   return m ? parseInt(m[1], 10) - 1 : null;
 }
 
-export function computeMonths(subs: SubRow[], now = new Date()): MonthCol[] {
+/** 일회성 지출의 결제월 (0-base month index 포함 Date). date 우선, 없으면 note 'M/D' 파싱 */
+function oneTimeMonth(o: OneTimeRow, now: Date): Date | null {
+  if (o.date) {
+    const d = new Date(o.date + 'T00:00:00');
+    return Number.isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+  const m = o.note.match(/^(\d{1,2})\/\d{1,2}/);
+  return m ? new Date(now.getFullYear(), parseInt(m[1], 10) - 1, 1) : null;
+}
+
+export function computeMonths(subs: SubRow[], oneTime: OneTimeRow[] = [], now = new Date()): MonthCol[] {
   const cols: MonthCol[] = [];
   for (let off = -3; off <= 2; off++) {
     const d = new Date(now.getFullYear(), now.getMonth() + off, 1);
@@ -44,6 +54,13 @@ export function computeMonths(subs: SubRow[], now = new Date()): MonthCol[] {
           : yearNextMonth(s.next);
         if (m === null) col[cat] += jpy / 12;
         else if (d.getMonth() === m) col[cat] += jpy;
+      }
+    }
+    // 일회성 지출: 결제월에만 '기타'로 포함 (헤드라인 구독료와는 별개)
+    for (const o of oneTime) {
+      const om = oneTimeMonth(o, now);
+      if (om && om.getFullYear() === d.getFullYear() && om.getMonth() === d.getMonth()) {
+        col.etc += toJPY(o.amt, o.c);
       }
     }
     cols.push(col);

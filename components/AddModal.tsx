@@ -83,7 +83,7 @@ export default function AddModal() {
     const d = new Date(date + 'T00:00:00');
     if (renew === 'one') {
       addOneTime({ name: name.trim(), note: `${d.getMonth() + 1}/${d.getDate()} 결제`,
-        amt: amount, c: curSel, init: name.trim()[0].toUpperCase() });
+        amt: amount, c: curSel, init: name.trim()[0].toUpperCase(), date });
       close(); router.push('/list');
       return;
     }
