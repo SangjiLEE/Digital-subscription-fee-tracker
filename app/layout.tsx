@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
+import { LangProvider } from '@/lib/i18n';
 import { StoreProvider } from '@/lib/store';
 import Header from '@/components/Header';
 import HomeOnReload from '@/components/HomeOnReload';
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <LangProvider>
         <AuthProvider>
           <StoreProvider>
             <div className="phone">
@@ -38,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </StoreProvider>
         </AuthProvider>
+        </LangProvider>
       </body>
     </html>
   );

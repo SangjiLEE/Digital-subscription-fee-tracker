@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SYM } from '@/lib/fx';
+import { useLang } from '@/lib/i18n';
 import { useStore, type Cat, type Region } from '@/lib/store';
 import type { Currency } from '@/lib/types';
 
@@ -52,6 +53,7 @@ const todayStr = () => {
 
 export default function AddModal() {
   const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft, region } = useStore();
+  const { t } = useLang();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -103,10 +105,10 @@ export default function AddModal() {
 
   const save = () => {
     const amount = parseFloat(amt);
-    if (!name.trim() || !amount) { alert('서비스명과 금액을 입력해주세요'); return; }
+    if (!name.trim() || !amount) { alert(t('validateMsg')); return; }
     const d = new Date(date + 'T00:00:00');
     if (renew === 'one') {
-      addOneTime({ name: name.trim(), note: `${d.getMonth() + 1}/${d.getDate()} 결제`,
+      addOneTime({ name: name.trim(), note: t('paidNote', { d: `${d.getMonth() + 1}/${d.getDate()}` }),
         amt: amount, c: curSel, init: name.trim()[0].toUpperCase(), date });
       close(); router.push('/list');
       return;
@@ -128,7 +130,7 @@ export default function AddModal() {
         cat: svc ? svc.cat : editing.cat,
       });
     } else {
-      addSub({ ...base, plan: plan ? plan.n : '커스텀', cat: svc ? svc.cat : (draft?.cat ?? 'etc') });
+      addSub({ ...base, plan: plan ? plan.n : t('planCustom'), cat: svc ? svc.cat : (draft?.cat ?? 'etc') });
     }
     close(); router.push('/list');
   };
@@ -137,13 +139,13 @@ export default function AddModal() {
     <div className="overlay" onClick={e => { if (e.target === e.currentTarget) close(); }}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
         <div className="m-head">
-          <h3 id="mTitle">{editing ? '구독 수정' : '구독 등록'}</h3>
-          <button className="m-close" onClick={close} aria-label="닫기">×</button>
+          <h3 id="mTitle">{editing ? t('editTitle') : t('addTitle')}</h3>
+          <button className="m-close" onClick={close} aria-label={t('close')}>×</button>
         </div>
 
         <div className="fld">
-          <label htmlFor="fName">서비스</label>
-          <input id="fName" type="text" placeholder="이름 검색 또는 직접 입력" autoComplete="off"
+          <label htmlFor="fName">{t('service')}</label>
+          <input id="fName" type="text" placeholder={t('searchPh')} autoComplete="off"
             value={name} onChange={e => { setName(e.target.value); setSvc(null); setPlan(null); }} />
           <div className="chips">
             {chips.map(s => (
@@ -161,11 +163,11 @@ export default function AddModal() {
               ))}
             </div>
           )}
-          {plan && <div className="ref-note">참고가로 채웠어요 ({region} 기준) · 실제 청구액과 다르면 수정하세요</div>}
+          {plan && <div className="ref-note">{t('refNote', { r: region })}</div>}
         </div>
 
         <div className="fld">
-          <label htmlFor="fAmt">금액</label>
+          <label htmlFor="fAmt">{t('amount')}</label>
           <div className="amt-row">
             <input id="fAmt" type="number" min={0} placeholder="0" inputMode="decimal"
               value={amt} onChange={e => setAmt(e.target.value)} />
@@ -177,24 +179,24 @@ export default function AddModal() {
         </div>
 
         <div className={`fld ${renew === 'one' ? 'off' : ''}`}>
-          <label>결제 주기</label>
+          <label>{t('cycle')}</label>
           <div className="seg">
             {(['month', 'year'] as CycleV[]).map(v => (
               <button key={v} className={cycle === v ? 'on' : ''}
-                onClick={() => setCycle(v)}>{v === 'month' ? '매월' : '매년'}</button>
+                onClick={() => setCycle(v)}>{v === 'month' ? t('everyMonth') : t('everyYear')}</button>
             ))}
           </div>
         </div>
 
         <div className="fld">
-          <label htmlFor="fDate">최초 결제일</label>
+          <label htmlFor="fDate">{t('firstDate')}</label>
           <input id="fDate" type="date" value={date} onChange={e => setDate(e.target.value)} />
         </div>
 
         <div className="fld">
-          <label>갱신 유형</label>
+          <label>{t('renewType')}</label>
           <div className="seg">
-            {(([['auto', '자동갱신'], ['manual', '수동갱신'], ['one', '일회성']] as [RenewV, string][])
+            {(([['auto', t('autoRenew')], ['manual', t('manualRenew')], ['one', t('oneTimeOpt')]] as [RenewV, string][])
               .filter(([v]) => !editing || v !== 'one')).map(([v, l]) => (
               <button key={v} className={renew === v ? 'on' : ''}
                 onClick={() => setRenew(v)}>{l}</button>
@@ -202,7 +204,7 @@ export default function AddModal() {
           </div>
         </div>
 
-        <button className="m-save" onClick={save}>{editing ? '수정 저장' : '등록'}</button>
+        <button className="m-save" onClick={save}>{editing ? t('saveEdit') : t('saveNew')}</button>
       </div>
     </div>
   );

@@ -1,26 +1,28 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLang } from '@/lib/i18n';
 import { useStore } from '@/lib/store';
 
 const TABS = [
-  { href: '/', icon: '▤', label: '홈' },
-  { href: '/list', icon: '☰', label: '목록' },
-  { href: '/settings', icon: '⚙', label: '설정' },
+  { href: '/', icon: '▤', key: 'navHome' },
+  { href: '/list', icon: '☰', key: 'navList' },
+  { href: '/settings', icon: '⚙', key: 'navSettings' },
 ];
 
 export default function TabNav() {
   const path = usePathname();
   const { setModalOpen } = useStore();
+  const { t } = useLang();
   return (
     <>
       {path !== '/settings' && (
-        <button className="fab" aria-label="구독 등록" onClick={() => setModalOpen(true)}>＋</button>
+        <button className="fab" aria-label={t('addTitle')} onClick={() => setModalOpen(true)}>＋</button>
       )}
       <nav>
-        {TABS.map(t => (
-          <Link key={t.href} href={t.href} className={path === t.href ? 'on' : ''}>
-            <span className="ico">{t.icon}</span>{t.label}
+        {TABS.map(tab => (
+          <Link key={tab.href} href={tab.href} className={path === tab.href ? 'on' : ''}>
+            <span className="ico">{tab.icon}</span>{t(tab.key)}
           </Link>
         ))}
       </nav>

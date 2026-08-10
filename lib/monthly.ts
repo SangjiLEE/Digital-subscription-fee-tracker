@@ -7,7 +7,7 @@ import type { OneTimeRow, SubRow, Cat } from './store';
  * 현재 구독 구성으로 역산한 추정치다.
  */
 export interface MonthCol {
-  label: string; past: boolean;
+  label: string; past: boolean; m: number;   // m: 1-base 월 번호 (표시용)
   ai: number; dev: number; ent: number; sto: number; etc: number;
 }
 
@@ -34,7 +34,7 @@ export function computeMonths(subs: SubRow[], oneTime: OneTimeRow[] = [], now = 
   for (let off = -3; off <= 2; off++) {
     const d = new Date(now.getFullYear(), now.getMonth() + off, 1);
     const col: MonthCol = {
-      label: `${d.getMonth() + 1}월`, past: off < 0,
+      label: `${d.getMonth() + 1}월`, past: off < 0, m: d.getMonth() + 1,
       ai: 0, dev: 0, ent: 0, sto: 0, etc: 0,
     };
     for (const s of subs) {

@@ -125,8 +125,8 @@
   .md-delta.flat{color:var(--ink-soft);font-weight:500}
   .bar-labels{display:flex;gap:10px;padding-left:38px;margin-top:6px}
   .bar-labels span{flex:1;text-align:center;font-size:11px;color:var(--ink-soft);font-family:var(--num)}
-  .bar-labels span.future::after{content:" 예정";font-size:9px}
   .bar-labels span.sel{color:var(--ink);font-weight:600}
+  .bar-labels small{font-size:9px}
   .today-seam{position:absolute;top:-4px;bottom:0;width:0;border-left:2px dashed var(--warn)}
   .today-seam span{
     position:absolute;top:-4px;left:4px;font-size:9px;color:var(--warn);

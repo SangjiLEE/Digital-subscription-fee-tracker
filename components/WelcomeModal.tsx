@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import { useLang } from '@/lib/i18n';
 
 const WKEY = 'dsftWelcomeHideUntil';
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -8,6 +9,7 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
 /** 첫 방문 웰컴 팝업. 로그인 유저에게는 절대 표시하지 않는다. */
 export default function WelcomeModal() {
   const { user, loading } = useAuth();
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -28,10 +30,10 @@ export default function WelcomeModal() {
     <div className="overlay center" onClick={e => { if (e.target === e.currentTarget) setOpen(false); }}>
       <div className="modal welcome-card" role="dialog" aria-modal="true" aria-labelledby="wTitle">
         <div className="w-mark">Digital Sub Fee Tracker</div>
-        <h3 className="w-title" id="wTitle">디지털 구독료,<br />얼마인지 알고 계신가요?</h3>
-        <p className="w-desc">넷플릭스부터 AI 구독까지 — 매달 나가는 돈과 갱신 일정을 한눈에. 지금 관리하세요!</p>
-        <button className="m-save" onClick={() => setOpen(false)}>시작하기</button>
-        <button className="w-skip" onClick={skipWeek}>일주일 동안 표시하지 않기</button>
+        <h3 className="w-title" id="wTitle">{t('wTitle1')}<br />{t('wTitle2')}</h3>
+        <p className="w-desc">{t('wDesc')}</p>
+        <button className="m-save" onClick={() => setOpen(false)}>{t('wStart')}</button>
+        <button className="w-skip" onClick={skipWeek}>{t('wSkip')}</button>
       </div>
     </div>
   );
