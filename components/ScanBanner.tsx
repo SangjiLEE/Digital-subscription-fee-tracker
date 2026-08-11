@@ -1,8 +1,8 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { SYM } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
-import { scanImage, type ScanItem } from '@/lib/scan';
+import type { ScanItem } from '@/lib/scan';
 import { useStore, type SubRow, type Cat } from '@/lib/store';
 
 const CAT_KEY: Record<Cat, string> = {
@@ -24,15 +24,16 @@ function toAnchor(it: ScanItem): string | undefined {
   return fmtDate(d);
 }
 
-/** 사진 업로드 → Gemini 인식 → [등록]=즉시 저장 / [편집]=모달 프리필 */
+/**
+ * 사진 인식 결과 표시 — 인식 중이거나 결과·안내가 있을 때만 나타난다.
+ * 업로드 시작은 + 버튼 메뉴(TabNav)에서.
+ */
 export default function ScanBanner() {
-  const { openDraft, addSub } = useStore();
+  const { openDraft, addSub, scanBusy, scanItems, scanNotice, dropScanItem } = useStore();
   const { t } = useLang();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const [items, setItems] = useState<ScanItem[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
   const [savingIdx, setSavingIdx] = useState<number | null>(null);
+
+  if (!scanBusy && !scanItems.length && !scanNotice) return null;
 
   /** 스캔 결과 → 저장용 SubRow (id 제외) */
   const toSub = (it: ScanItem): Omit<SubRow, 'id'> => {
@@ -49,35 +50,16 @@ export default function ScanBanner() {
     };
   };
 
-  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    e.target.value = '';
-    if (!f) return;
-    setBusy(true); setNotice(null); setItems([]);
-    try {
-      const r = await scanImage(f);
-      setItems(r);
-      if (!r.length) setNotice(t('scanNotFound'));
-    } catch (err) {
-      console.error('스캔 실패:', err);
-      const detail = (err as Error)?.message?.slice(0, 140) ?? '?';
-      setNotice(t('scanFailed', { d: detail }));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const drop = (it: ScanItem) => setItems(p => p.filter(x => x !== it));
   const registerNow = async (it: ScanItem, idx: number) => {
     setSavingIdx(idx);
     const ok = await addSub(toSub(it));
     setSavingIdx(null);
-    if (ok) drop(it);            // 실패 시 카드 유지 (알림은 store가 표시)
+    if (ok) dropScanItem(it);    // 실패 시 카드 유지 (알림은 store가 표시)
   };
   const edit = (it: ScanItem) => {
     const s = toSub(it);
     openDraft({ name: s.name, amt: s.amt, c: s.c, cycle: s.cycle, cat: s.cat, anchor: s.anchor });
-    drop(it);
+    dropScanItem(it);
   };
 
   const renewLabel = (it: ScanItem) => {
@@ -91,12 +73,9 @@ export default function ScanBanner() {
   return (
     <section>
       <div className="sec-head"><h2>{t('scanTitle')}</h2><span className="hint">{t('scanHint')}</span></div>
-      <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
-      <button className="scan-btn" onClick={() => fileRef.current?.click()} disabled={busy}>
-        {busy ? t('scanning') : t('scanBtn')}
-      </button>
-      {notice && <div className="scan-notice">{notice}</div>}
-      {items.map((it, i) => (
+      {scanBusy && <div className="scan-notice">{t('scanning')}</div>}
+      {scanNotice && <div className="scan-notice">{scanNotice}</div>}
+      {scanItems.map((it, i) => (
         <div className="inbox-banner scan-item" key={`${it.name}-${i}`}>
           <span>
             <b>{it.name}</b> · {SYM[it.currency]}{it.amount.toLocaleString()}
@@ -110,7 +89,7 @@ export default function ScanBanner() {
               {savingIdx === i ? t('adding') : t('register')}
             </button>
             <button className="mini ghost" disabled={savingIdx !== null} onClick={() => edit(it)}>{t('edit')}</button>
-            <button className="mini ghost" disabled={savingIdx !== null} onClick={() => drop(it)}>{t('dismiss')}</button>
+            <button className="mini ghost" disabled={savingIdx !== null} onClick={() => dropScanItem(it)}>{t('dismiss')}</button>
           </span>
         </div>
       ))}

@@ -7,6 +7,7 @@ import { db } from './firebase';
 import { useAuth } from './auth';
 import { useLang } from './i18n';
 import { refreshRates } from './fx';
+import { scanImage, type ScanItem } from './scan';
 import type { Currency } from './types';
 
 /**
@@ -69,6 +70,12 @@ interface Store {
   editing: SubRow | null; openEdit: (s: SubRow) => void;
   draft: Partial<Omit<SubRow, 'id'>> | null;      // 사진 인식 결과 프리필용
   openDraft: (d: Partial<Omit<SubRow, 'id'>>) => void;
+  // 사진 인식 (어느 화면에서든 시작 → 목록 화면에서 결과 표시)
+  scanBusy: boolean;
+  scanItems: ScanItem[];
+  scanNotice: string | null;
+  startScan: (file: File) => Promise<void>;
+  dropScanItem: (it: ScanItem) => void;
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -167,6 +174,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     catch (e) { fail(e as { code?: string }); return false; }
   };
 
+  const [scanBusy, setScanBusy] = useState(false);
+  const [scanItems, setScanItems] = useState<ScanItem[]>([]);
+  const [scanNotice, setScanNotice] = useState<string | null>(null);
+  const startScan = async (file: File) => {
+    setScanBusy(true); setScanNotice(null); setScanItems([]);
+    try {
+      const r = await scanImage(file);
+      setScanItems(r);
+      if (!r.length) setScanNotice(t('scanNotFound'));
+    } catch (err) {
+      console.error('스캔 실패:', err);
+      const detail = (err as Error)?.message?.slice(0, 140) ?? '?';
+      setScanNotice(t('scanFailed', { d: detail }));
+    } finally {
+      setScanBusy(false);
+    }
+  };
+  const dropScanItem = (it: ScanItem) => setScanItems(p => p.filter(x => x !== it));
+
   const openEdit = (s: SubRow) => { setDraft(null); setEditing(s); setModalOpen(true); };
   const openDraft: Store['openDraft'] = d => { setEditing(null); setDraft(d); setModalOpen(true); };
   const setModalOpenWrap = (v: boolean) => { setModalOpen(v); if (!v) { setEditing(null); setDraft(null); } };
@@ -178,6 +204,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSub, updateSub, removeSub, addOneTime, removeOneTime,
       modalOpen, setModalOpen: setModalOpenWrap,
       editing, openEdit, draft, openDraft,
+      scanBusy, scanItems, scanNotice, startScan, dropScanItem,
     }}>{children}</Ctx.Provider>
   );
 }

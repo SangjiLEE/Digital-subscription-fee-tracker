@@ -130,6 +130,8 @@ const DICT: Record<string, Record<Lang, string>> = {
   adding:       { ko: '등록 중…', ja: '登録中…', en: 'Adding…' },
   saving:       { ko: '저장 중…', ja: '保存中…', en: 'Saving…' },
   opFail:       { ko: '처리에 실패했습니다. 잠시 후 다시 시도해주세요.', ja: '処理に失敗しました。しばらくして再試行してください。', en: 'Something went wrong. Please try again.' },
+  addManual:    { ko: '✏️ 직접 등록', ja: '✏️ 手動で登録', en: '✏️ Add manually' },
+  addByPhoto:   { ko: '📷 사진 업로드하기', ja: '📷 写真をアップロード', en: '📷 Upload a photo' },
 };
 
 interface LangCtx {
