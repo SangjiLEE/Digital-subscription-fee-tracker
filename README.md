@@ -1,49 +1,68 @@
-# Digital Subscription Fee Tracker
+# Digital Sub Fee Tracker
 
 넷플릭스부터 AI 구독까지 — 매달 나가는 디지털 구독료와 갱신 일정을 한눈에 보는 웹 서비스.
 
-## 시작하기
+**라이브**: https://subfolio-app.web.app
+
+## 현재 기능 (알파)
+
+- **Google 로그인** — One Tap(FedCM) 1순위, 팝업 → 리다이렉트 폴백. 데이터는 Firestore `users/{uid}/`에 본인만 접근
+- **구독 관리** — 등록(카탈로그 참고가 프리필) · 수정(행 탭) · 삭제(×). 비로그인은 데모 데이터
+- **사진 자동 인식** — 영수증·구독 화면 캡처를 올리면 Gemini가 서비스명/금액/통화/주기/카테고리/갱신일 추출 → 확인 카드 → 즉시 등록 또는 편집 (Firebase AI Logic, 이미지는 저장하지 않음)
+- **홈 대시보드** — 월 총액, 월별 스택 차트(과거 실선/예정 빗금 + 추세선 + 전월 대비 증감), 30일 내 갱신 리스트, 3일 내 갱신 앱 내 알림 배너
+- **실환율** — Frankfurter(ECB) 일 1회 페치, 24h 캐시, 실패 시 고정값 폴백. ₩/¥/$ 표시 통화 전환
+- **다국어** — 한국어 · 日本語 · English (설정에서 전환, 기기 저장)
+- **가격 참조 지역** — JP/KR/US 별 카탈로그 참고가
+
+"준비 중": 주간 요약 메일 · 메일 포워딩 감지 (발송/수신 서버 필요 — Blaze 전환 후)
+
+## 개발
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
 ```
 
-배포: 레포를 Vercel에 연결하면 `git push`마다 자동 배포됩니다.
+`.env.local`에 `NEXT_PUBLIC_FIREBASE_*` 6개 키 필요 (Firebase 콘솔 → 프로젝트 설정 → 웹 앱).
+
+## 배포
+
+`main` push → GitHub Actions가 빌드 후 Firebase Hosting에 자동 배포. PR은 프리뷰 채널.
+빌드 env는 GitHub Secrets(`NEXT_PUBLIC_*`)에서 주입.
+
+수동 배포: `npm run build && firebase deploy --only hosting`
 
 ## 구조
 
 ```
 app/
-  page.tsx           홈 — 월 총액, 카테고리 스택 그래프(클릭 상세), 다가오는 갱신
-  list/page.tsx      목록 — 카테고리별 그룹(월 환산 소계), 일회성 지출 분리, inbox 배너
-  settings/page.tsx  설정 — 언어/통화/가격지역/타임존, 주간 메일·알림 토글, 포워딩 주소
-  layout.tsx         공통 셸 (헤더, 탭내비, 웰컴 팝업, 등록 모달)
+  page.tsx           홈 — 총액·차트·갱신 리스트·알림 배너
+  list/page.tsx      목록 — 사진 인식, 카테고리 그룹(월 환산 소계), 일회성 분리
+  settings/page.tsx  설정 — 통화·언어·가격지역 드롭다운, 갱신 알림 토글
+  layout.tsx         공통 셸 (Lang/Auth/Store Provider, 헤더, 탭내비, 모달)
 components/
-  WelcomeModal.tsx   첫 방문 팝업 — 로그인 유저 미표시, 7일 숨김(localStorage)
-  AddModal.tsx       등록 모달 — 카탈로그 참고가 프리필, 일회성/수동갱신 분기, 연결제 연도 표기
-  MonthChart.tsx     과거=실선 / 미래=빗금 스택 막대 (D8: 미래는 오늘 환율)
+  ScanBanner.tsx     사진 업로드 → Gemini 인식 카드 → 등록/편집
+  AddModal.tsx       등록·수정 모달 — 지역별 카탈로그 참고가 프리필
+  MonthChart.tsx     스택 막대 + 추세선 (y축 눈금, CVD 검증 팔레트)
   ...
 lib/
-  types.ts           스키마(docs/schema.md 4장)와 1:1 대응하는 타입
-  fx.ts              환율 유틸 (현재 더미 — TODO: fxRates 크론)
-  auth.tsx           인증 스텁 (TODO: Firebase Google OAuth)
-  store.tsx          인메모리 상태 (TODO: Firestore 구독으로 교체)
-data/
-  catalog-seed.json  참조용 카탈로그 시드 (KR/JP/US, 20서비스 54플랜, verification 플래그)
-docs/
-  schema.md          데이터 모델·설계 결정(D1~D13) 전체 문서
-  mockup.html        정적 목업 (단일 파일, 디자인 원본)
+  firebase.ts        Firebase 초기화 (authDomain은 반드시 사이트 도메인)
+  auth.tsx           One Tap → 팝업 → 리다이렉트 3단 로그인
+  store.tsx          Firestore 실시간 구독 + 환경설정(localStorage)
+  scan.ts            Gemini 이미지 추출 (gemini-flash-latest, responseSchema)
+  monthly.ts         월별 집계·다음 결제일 계산 (D7 월말 클램프)
+  fx.ts              ECB 환율 (24h 캐시, 폴백)
+  i18n.tsx           ko/ja/en 문구 사전 — UI 문구는 전부 여기에
+data/catalog-seed.json  카탈로그 시드 (KR/JP/US)
+docs/schema.md          데이터 모델·설계 결정(D1~D13)
 ```
 
-## 다음 단계 (TODO)
+## 로드맵
 
-1. **Firebase 연동** — `lib/auth.tsx`의 mock을 Google OAuth로 교체, `lib/store.tsx`를
-   `users/{uid}/subscriptions` 구독으로 교체 (Multifolios 패턴 재활용)
-2. **환율 크론** — Vercel Cron → Frankfurter API → `fxRates/{date}` 저장 (D9: 주말 폴백 포함)
-3. **D7 월말 클램프** — `AddModal`의 다음 결제일 계산에 anchorDay 보존 로직
-4. **주간 메일** — 일요일 09:00 (유저 타임존), self-report 버튼 포함 (D5·D10)
-5. **영수증 포워딩 파싱** — 수신 → LLM 추출 → inbox 착지 → 유저 확정 (D12: 자동 병합 금지)
-6. **i18n** — ko/ja/en, 카탈로그 names 3개 국어 활용 (D4: 언어·통화·가격지역 독립)
+1. **charges 원장** — 실제 결제 이력 기록 (과거 월 추정치 → 실측 전환, 환율 스냅샷 박제)
+2. **FX 마크업** — 결제수단별 해외결제 수수료 반영 (차별화 포인트: 실제 청구액 기준 총액)
+3. **전체 Subscription 스키마 마이그레이션** — lib/types.ts ↔ docs/schema.md 정합
+4. **App Check 정식 도입** — reCAPTCHA v3 (스캔 남용 방지)
+5. **메일 파이프라인** — Blaze 전환 후 주간 요약 메일 + 영수증 포워딩 감지
 
 설계 결정의 근거는 `docs/schema.md`의 D1~D13 표를 참조.

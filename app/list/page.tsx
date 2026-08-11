@@ -1,11 +1,13 @@
 'use client';
 import SubList from '@/components/SubList';
+import { useLang } from '@/lib/i18n';
 
 export default function ListPage() {
+  const { t } = useLang();
   return (
     <main>
       <SubList />
-      <footer>행을 누르면 상세 · 변경 이력</footer>
+      <footer>{t('listFooter')}</footer>
     </main>
   );
 }
