@@ -44,6 +44,7 @@ export default function TabNav() {
                   onClick={() => { setMenuOpen(false); fileRef.current?.click(); }}>
                   {t('addByPhoto')}
                 </button>
+                <span className="menu-note">{t('scanPrivacy')}</span>
               </div>
             </>
           )}

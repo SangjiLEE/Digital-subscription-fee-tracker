@@ -132,6 +132,21 @@ const DICT: Record<string, Record<Lang, string>> = {
   opFail:       { ko: '처리에 실패했습니다. 잠시 후 다시 시도해주세요.', ja: '処理に失敗しました。しばらくして再試行してください。', en: 'Something went wrong. Please try again.' },
   addManual:    { ko: '✏️ 직접 등록', ja: '✏️ 手動で登録', en: '✏️ Add manually' },
   addByPhoto:   { ko: '📷 사진 업로드하기', ja: '📷 写真をアップロード', en: '📷 Upload a photo' },
+  scanTimeout:  { ko: '인식이 30초를 넘겨 중단했어요. 다시 시도하거나 직접 입력해 주세요.', ja: '認識が30秒を超えたため中断しました。再試行するか手動で入力してください。', en: 'Scan took over 30s and was stopped. Retry or enter manually.' },
+  retry:        { ko: '다시 시도', ja: '再試行', en: 'Retry' },
+  cancelBtn:    { ko: '취소', ja: 'キャンセル', en: 'Cancel' },
+  enterManually:{ ko: '직접 입력', ja: '手動入力', en: 'Enter manually' },
+  scanPrivacy:  { ko: '사진은 Google Gemini로 분석만 하고 저장하지 않아요', ja: '写真はGoogle Geminiで分析のみ行い、保存しません', en: 'Photos are analyzed by Google Gemini and never stored' },
+  signingIn:    { ko: '로그인 중…', ja: 'ログイン中…', en: 'Signing in…' },
+  loginBenefit: { ko: '로그인하면 구독 정보가 여러 기기에서 동기화돼요', ja: 'ログインするとサブスク情報が複数端末で同期されます', en: 'Sign in to sync your subscriptions across devices' },
+  sampleBadge:  { ko: '샘플', ja: 'サンプル', en: 'Sample' },
+  sampleNote:   { ko: '지금 보이는 것은 샘플 데이터예요 — 로그인하면 내 구독으로 시작해요', ja: '表示中はサンプルデータです — ログインすると自分のサブスクで始められます', en: 'This is sample data — sign in to start with your own subscriptions' },
+  renewToday:   { ko: '오늘', ja: '今日', en: 'today' },
+  renewTomorrow:{ ko: '내일', ja: '明日', en: 'tomorrow' },
+  renewInDays:  { ko: '{n}일 후', ja: '{n}日後', en: 'in {n} days' },
+  alertSingle:  { ko: '{name} — {when} 갱신', ja: '{name} — {when}更新', en: '{name} renews {when}' },
+  alertMultiN:  { ko: '3일 안에 {n}건 갱신 — {name} {when}', ja: '3日以内に{n}件更新 — {name} {when}', en: '{n} renew within 3 days — {name} {when}' },
+  monthlyEquiv: { ko: '월 환산 약 {v}', ja: '月換算 約 {v}', en: '≈ {v}/month' },
 };
 
 interface LangCtx {

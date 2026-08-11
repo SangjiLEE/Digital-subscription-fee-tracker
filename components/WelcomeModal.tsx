@@ -34,6 +34,7 @@ export default function WelcomeModal() {
         <p className="w-desc">{t('wDesc')}</p>
         <button className="m-save" onClick={() => setOpen(false)}>{t('wStart')}</button>
         <button className="w-skip" onClick={skipWeek}>{t('wSkip')}</button>
+        <p className="w-benefit">{t('loginBenefit')}</p>
       </div>
     </div>
   );

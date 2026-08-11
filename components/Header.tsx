@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import { useLang } from '@/lib/i18n';
 
 export default function Header() {
-  const { user, signIn, signOut } = useAuth();
+  const { user, authBusy, signIn, signOut } = useAuth();
   const { t } = useLang();
   return (
     <header>
@@ -12,7 +12,9 @@ export default function Header() {
       {user ? (
         <button className="login-btn ghost" onClick={signOut}>{user.displayName} · {t('signOut')}</button>
       ) : (
-        <button className="login-btn" onClick={signIn}>{t('signIn')}</button>
+        <button className="login-btn" onClick={signIn} disabled={authBusy}>
+          {authBusy ? t('signingIn') : t('signIn')}
+        </button>
       )}
     </header>
   );

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SYM } from '@/lib/fx';
+import { SYM, fmt, toJPY } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { useStore, type Cat, type Region } from '@/lib/store';
 import type { Currency } from '@/lib/types';
@@ -52,7 +52,7 @@ const todayStr = () => {
 };
 
 export default function AddModal() {
-  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft, region } = useStore();
+  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft, region, cur } = useStore();
   const { t } = useLang();
   const router = useRouter();
 
@@ -92,6 +92,9 @@ export default function AddModal() {
   }, [draft, modalOpen, editing]);
 
   if (!modalOpen) return null;
+
+  const amountNum = parseFloat(amt);
+  const invalid = !name.trim() || !(amountNum > 0);
 
   const chips = MINICAT.filter(s => s.name.toLowerCase().includes(name.toLowerCase()));
 
@@ -186,11 +189,15 @@ export default function AddModal() {
           <label>{t('cycle')}</label>
           <div className="seg">
             {(['month', 'year'] as CycleV[]).map(v => (
-              <button key={v} className={cycle === v ? 'on' : ''}
+              <button key={v} className={cycle === v ? 'on' : ''} aria-pressed={cycle === v}
                 onClick={() => setCycle(v)}>{v === 'month' ? t('everyMonth') : t('everyYear')}</button>
             ))}
           </div>
         </div>
+
+        {cycle === 'year' && renew !== 'one' && amountNum > 0 && (
+          <div className="ref-note">{t('monthlyEquiv', { v: fmt(toJPY(amountNum, curSel) / 12, cur) })}</div>
+        )}
 
         <div className="fld">
           <label htmlFor="fDate">{t('firstDate')}</label>
@@ -202,13 +209,13 @@ export default function AddModal() {
           <div className="seg">
             {(([['auto', t('autoRenew')], ['manual', t('manualRenew')], ['one', t('oneTimeOpt')]] as [RenewV, string][])
               .filter(([v]) => !editing || v !== 'one')).map(([v, l]) => (
-              <button key={v} className={renew === v ? 'on' : ''}
+              <button key={v} className={renew === v ? 'on' : ''} aria-pressed={renew === v}
                 onClick={() => setRenew(v)}>{l}</button>
             ))}
           </div>
         </div>
 
-        <button className="m-save" onClick={save} disabled={saving}>{saving ? t('saving') : editing ? t('saveEdit') : t('saveNew')}</button>
+        <button className="m-save" onClick={save} disabled={saving || invalid}>{saving ? t('saving') : editing ? t('saveEdit') : t('saveNew')}</button>
       </div>
     </div>
   );

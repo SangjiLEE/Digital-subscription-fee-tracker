@@ -29,7 +29,7 @@ function toAnchor(it: ScanItem): string | undefined {
  * 업로드 시작은 + 버튼 메뉴(TabNav)에서.
  */
 export default function ScanBanner() {
-  const { openDraft, addSub, scanBusy, scanItems, scanNotice, dropScanItem } = useStore();
+  const { openDraft, addSub, scanBusy, scanItems, scanNotice, dropScanItem, retryScan, cancelScan, setModalOpen } = useStore();
   const { t } = useLang();
   const [savingIdx, setSavingIdx] = useState<number | null>(null);
 
@@ -72,9 +72,25 @@ export default function ScanBanner() {
 
   return (
     <section>
-      <div className="sec-head"><h2>{t('scanTitle')}</h2><span className="hint">{t('scanHint')}</span></div>
-      {scanBusy && <div className="scan-notice">{t('scanning')}</div>}
-      {scanNotice && <div className="scan-notice">{scanNotice}</div>}
+      <div className="sec-head"><h2>{t('scanTitle')}</h2><span className="hint">{t('scanPrivacy')}</span></div>
+      {scanBusy && (
+        <div className="scan-notice">
+          {t('scanning')}
+          <span className="scan-acts-row">
+            <button className="mini ghost" onClick={cancelScan}>{t('cancelBtn')}</button>
+          </span>
+        </div>
+      )}
+      {scanNotice && (
+        <div className="scan-notice">
+          {scanNotice}
+          <span className="scan-acts-row">
+            <button className="mini" onClick={retryScan}>{t('retry')}</button>
+            <button className="mini ghost" onClick={() => { cancelScan(); setModalOpen(true); }}>{t('enterManually')}</button>
+            <button className="mini ghost" onClick={cancelScan}>{t('cancelBtn')}</button>
+          </span>
+        </div>
+      )}
       {scanItems.map((it, i) => (
         <div className="inbox-banner scan-item" key={`${it.name}-${i}`}>
           <span>

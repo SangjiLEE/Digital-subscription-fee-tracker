@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp,
 } from 'firebase/firestore';
@@ -75,6 +75,8 @@ interface Store {
   scanItems: ScanItem[];
   scanNotice: string | null;
   startScan: (file: File) => Promise<void>;
+  retryScan: () => void;
+  cancelScan: () => void;
   dropScanItem: (it: ScanItem) => void;
 }
 
@@ -177,19 +179,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [scanBusy, setScanBusy] = useState(false);
   const [scanItems, setScanItems] = useState<ScanItem[]>([]);
   const [scanNotice, setScanNotice] = useState<string | null>(null);
+  const lastScanFile = useRef<File | null>(null);
+  const scanSeq = useRef(0);            // 취소·재시도 시 이전 요청 결과 무시용
   const startScan = async (file: File) => {
+    lastScanFile.current = file;
+    const seq = ++scanSeq.current;
     setScanBusy(true); setScanNotice(null); setScanItems([]);
     try {
       const r = await scanImage(file);
+      if (seq !== scanSeq.current) return;   // 취소됨/새 요청으로 대체됨
       setScanItems(r);
       if (!r.length) setScanNotice(t('scanNotFound'));
     } catch (err) {
+      if (seq !== scanSeq.current) return;
       console.error('스캔 실패:', err);
-      const detail = (err as Error)?.message?.slice(0, 140) ?? '?';
-      setScanNotice(t('scanFailed', { d: detail }));
+      const msg = (err as Error)?.message ?? '?';
+      setScanNotice(msg === 'SCAN_TIMEOUT'
+        ? t('scanTimeout')
+        : t('scanFailed', { d: msg.slice(0, 140) }));
     } finally {
-      setScanBusy(false);
+      if (seq === scanSeq.current) setScanBusy(false);
     }
+  };
+  const retryScan = () => { if (lastScanFile.current) startScan(lastScanFile.current); };
+  const cancelScan = () => {
+    scanSeq.current++;
+    setScanBusy(false); setScanNotice(null); setScanItems([]);
   };
   const dropScanItem = (it: ScanItem) => setScanItems(p => p.filter(x => x !== it));
 
@@ -204,7 +219,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSub, updateSub, removeSub, addOneTime, removeOneTime,
       modalOpen, setModalOpen: setModalOpenWrap,
       editing, openEdit, draft, openDraft,
-      scanBusy, scanItems, scanNotice, startScan, dropScanItem,
+      scanBusy, scanItems, scanNotice, startScan, retryScan, cancelScan, dropScanItem,
     }}>{children}</Ctx.Provider>
   );
 }

@@ -16,24 +16,26 @@ interface User { uid: string; displayName: string; }
 interface AuthCtx {
   user: User | null;
   loading: boolean;      // 초기 세션 복원 중 (팝업 깜빡임 방지용)
+  authBusy: boolean;     // 로그인 진행 중 (버튼 표시·중복 클릭 방지)
   signIn: () => void;
   signOut: () => void;
 }
 
-const Ctx = createContext<AuthCtx>({ user: null, loading: true, signIn: () => {}, signOut: () => {} });
+const Ctx = createContext<AuthCtx>({ user: null, loading: true, authBusy: false, signIn: () => {}, signOut: () => {} });
 
 function reportFail(e: { code?: string } | undefined) {
   console.error('로그인 실패:', e?.code);
   alert(`로그인에 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류 코드: ${e?.code ?? '알 수 없음'})`);
 }
 
-/** 팝업 방식 (차단 시 리다이렉트 폴백) */
-function popupSignIn() {
+/** 팝업 방식 (차단 시 리다이렉트 폴백). onSettle: 진행 상태 해제용 */
+function popupSignInWith(onSettle: () => void) {
   signInWithPopup(auth, googleProvider).catch(e => {
     if (e?.code === 'auth/popup-blocked') {
       signInWithRedirect(auth, googleProvider);
       return;
     }
+    onSettle();
     if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
       reportFail(e);
     }
@@ -57,6 +59,10 @@ function withGsi(cb: () => void, onError: () => void) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authBusy, setAuthBusy] = useState(false);
+
+  // 로그인 완료(user 도착) 시 진행 상태 해제
+  useEffect(() => { if (user) setAuthBusy(false); }, [user]);
 
   useEffect(() => {
     return onAuthStateChanged(auth, u => {
@@ -69,7 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * 1순위: Google One Tap (FedCM) — 브라우저 내장 UI라 팝업 차단기/확장의
    * 영향을 받지 않는다. 표시 불가(쿨다운·미로그인 등)면 팝업 방식 폴백.
    */
+  const popupSignIn = () => popupSignInWith(() => setAuthBusy(false));
+
   const signIn = () => {
+    if (authBusy) return;                      // 중복 클릭 방지
+    setAuthBusy(true);
+    setTimeout(() => setAuthBusy(false), 15_000);  // 안전 타임아웃
     withGsi(() => {
       const gid = window.google.accounts.id;
       gid.initialize({
@@ -77,22 +88,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         use_fedcm_for_prompt: true,
         callback: (resp: { credential: string }) => {
           signInWithCredential(auth, GoogleAuthProvider.credential(resp.credential))
-            .catch(reportFail);
+            .catch(e => { setAuthBusy(false); reportFail(e); });
         },
       });
       gid.prompt((moment: any) => {
         const skipped = moment?.isSkippedMoment?.() || moment?.isNotDisplayed?.();
+        const dismissed = moment?.isDismissedMoment?.();
         if (skipped) popupSignIn();
+        else if (dismissed) setAuthBusy(false);
       });
     }, popupSignIn);
   };
+
 
   const signOut = () => {
     window.google?.accounts?.id?.disableAutoSelect?.();
     fbSignOut(auth);
   };
 
-  return <Ctx.Provider value={{ user, loading, signIn, signOut }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, loading, authBusy, signIn, signOut }}>{children}</Ctx.Provider>;
 }
 
 export const useAuth = () => useContext(Ctx);

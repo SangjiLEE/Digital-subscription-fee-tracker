@@ -74,11 +74,19 @@ async function toPayload(file: File): Promise<{ mimeType: string; data: string }
   return { mimeType: 'image/jpeg', data: dataUrl.split(',')[1] };
 }
 
+const SCAN_TIMEOUT_MS = 30_000;
+
 export async function scanImage(file: File): Promise<ScanItem[]> {
   const { mimeType, data } = await toPayload(file);
-  const res = await getModel().generateContent([
+  const call = getModel().generateContent([
     { inlineData: { mimeType, data } },
     { text: PROMPT },
+  ]);
+  // 30초 초과 시 중단 — UI가 타임아웃 안내·재시도를 제공한다
+  const res = await Promise.race([
+    call,
+    new Promise<never>((_, rej) =>
+      setTimeout(() => rej(new Error('SCAN_TIMEOUT')), SCAN_TIMEOUT_MS)),
   ]);
   const parsed = JSON.parse(res.response.text()) as ScanItem[];
   return parsed.filter(i => i?.name && i.amount > 0);

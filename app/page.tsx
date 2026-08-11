@@ -9,7 +9,7 @@ import { computeMonths, colTotal, daysUntil, nextChargeDate } from '@/lib/monthl
 import { useStore } from '@/lib/store';
 
 export default function Home() {
-  const { cur, subs, oneTime, fxDate, renewAlert } = useStore();
+  const { cur, subs, oneTime, fxDate, renewAlert, isDemo } = useStore();
   const { t, mon } = useLang();
   // fxDate 의존: 환율 갱신 시 재계산
   const months = useMemo(() => computeMonths(subs, oneTime), [subs, oneTime, fxDate]);
@@ -26,14 +26,23 @@ export default function Home() {
 
   return (
     <main>
-      {imminent.length > 0 && (
-        <div className="renew-alert" role="status">
-          ⏰ <b>{imminent.length > 1
-            ? t('alertMulti', { name: imminent[0].s.name, n: imminent.length - 1 })
-            : t('alertOne', { name: imminent[0].s.name })}</b>
-          <span className="ra-day">{daysUntil(imminent[0].d!) === 0 ? t('today') : `D-${daysUntil(imminent[0].d!)}`}</span>
+      {isDemo && subs.length > 0 && (
+        <div className="demo-note" role="note">
+          <i className="soon">{t('sampleBadge')}</i> {t('sampleNote')}
         </div>
       )}
+      {imminent.length > 0 && (() => {
+        const d0 = daysUntil(imminent[0].d!);
+        const when = d0 === 0 ? t('renewToday') : d0 === 1 ? t('renewTomorrow') : t('renewInDays', { n: d0 });
+        return (
+          <div className="renew-alert" role="status">
+            ⏰ <b>{imminent.length > 1
+              ? t('alertMultiN', { n: imminent.length, name: imminent[0].s.name, when })
+              : t('alertSingle', { name: imminent[0].s.name, when })}</b>
+            <span className="ra-day">{d0 === 0 ? t('today') : `D-${d0}`}</span>
+          </div>
+        );
+      })()}
       <div className="total">
         <div className="label">{nowMonth && t('totalLabel', { mon: mon(nowMonth.m) })}</div>
         <div className="amount">{fmt(total, cur)}</div>

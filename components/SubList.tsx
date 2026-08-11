@@ -25,8 +25,7 @@ export default function SubList() {
     return t('nextOn', { d: d ? `${d.getMonth() + 1}/${d.getDate()}` : s.next });
   };
 
-  const del = (e: React.MouseEvent, s: SubRow) => {
-    e.stopPropagation();
+  const del = (s: SubRow) => {
     if (confirm(t('delSub', { name: s.name }))) removeSub(s.id);
   };
 
@@ -56,21 +55,21 @@ export default function SubList() {
               </div>
               <div className="sub-card">
                 {items.map(s => (
-                  <div className="sub-row tappable" key={s.id} role="button" tabIndex={0}
-                    aria-label={`${s.name} ${t('edit')}`}
-                    onClick={() => openEdit(s)}
-                    onKeyDown={e => { if (e.key === 'Enter') openEdit(s); }}>
-                    <div className="r-icon" style={{ background: CATCOLOR[s.cat] }}>{s.init}</div>
-                    <div className="r-body">
-                      <div className="r-name">{s.name}</div>
-                      <div className="r-meta">{planLabel(s.plan, t)} · {s.cycle === 'year' ? t('yearly') : t('monthly')}</div>
-                    </div>
-                    <div className="r-right">
-                      <div className="r-amt">{fmt(toJPY(s.amt, s.c), cur)}</div>
-                      <div className="r-day">{nextLabel(s)}</div>
-                    </div>
+                  <div className="sub-row" key={s.id}>
+                    <button className="row-main" aria-label={`${s.name} ${t('edit')}`}
+                      onClick={() => openEdit(s)}>
+                      <div className="r-icon" style={{ background: CATCOLOR[s.cat] }}>{s.init}</div>
+                      <div className="r-body">
+                        <div className="r-name">{s.name}</div>
+                        <div className="r-meta">{planLabel(s.plan, t)} · {s.cycle === 'year' ? t('yearly') : t('monthly')}</div>
+                      </div>
+                      <div className="r-right">
+                        <div className="r-amt">{fmt(toJPY(s.amt, s.c), cur)}</div>
+                        <div className="r-day">{nextLabel(s)}</div>
+                      </div>
+                    </button>
                     <button className="row-del" aria-label={`${s.name} ${t('delete')}`}
-                      onClick={e => del(e, s)}>×</button>
+                      onClick={() => del(s)}>×</button>
                   </div>
                 ))}
               </div>
@@ -85,12 +84,14 @@ export default function SubList() {
           {oneTime.length === 0 && <div className="renew-empty">{t('emptyOneTime')}</div>}
           {oneTime.map(o => (
             <div className="sub-row" key={o.id}>
-              <div className="r-icon" style={{ background: '#B7C0CC' }}>{o.init}</div>
-              <div className="r-body">
-                <div className="r-name">{o.name}</div>
-                <div className="r-meta">{o.note} · {t('oneTimeTag')}</div>
+              <div className="row-main static">
+                <div className="r-icon" style={{ background: '#B7C0CC' }}>{o.init}</div>
+                <div className="r-body">
+                  <div className="r-name">{o.name}</div>
+                  <div className="r-meta">{o.note} · {t('oneTimeTag')}</div>
+                </div>
+                <div className="r-right"><div className="r-amt">{fmt(toJPY(o.amt, o.c), cur)}</div></div>
               </div>
-              <div className="r-right"><div className="r-amt">{fmt(toJPY(o.amt, o.c), cur)}</div></div>
               <button className="row-del" aria-label={`${o.name} ${t('delete')}`}
                 onClick={() => { if (confirm(t('delOne', { name: o.name }))) removeOneTime(o.id); }}>×</button>
             </div>
