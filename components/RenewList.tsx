@@ -4,6 +4,7 @@ import { fmt, toJPY } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { daysUntil, nextChargeDate } from '@/lib/monthly';
 import { useStore, CATCOLOR } from '@/lib/store';
+import { planLabel } from '@/components/SubList';
 
 /** 30일 이내 갱신 예정 구독 (다음 결제일 오름차순) */
 export default function RenewList() {
@@ -33,7 +34,7 @@ export default function RenewList() {
               <div className="r-name">{s.name}</div>
               <div className="r-meta">
                 {manual && <span className="flag">{t('manualRenew')} · </span>}
-                {s.plan} · {s.cycle === 'year' ? t('yearly') : t('monthly')}
+                {planLabel(s.plan, t)} · {s.cycle === 'year' ? t('yearly') : t('monthly')}
               </div>
             </div>
             <div className="r-right">

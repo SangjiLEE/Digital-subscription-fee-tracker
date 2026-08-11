@@ -84,9 +84,9 @@ export default function MonthChart() {
             <i key={i} className="trend-dot" style={{ left: `${p.xPct}%`, top: p.y }} />
           ))}
         </div>
-        {firstFuture > 0 && (
+        {firstFuture >= 0 && (
           <div className="today-seam"
-            style={{ left: `calc(38px + (100% - 38px) * ${firstFuture / MONTHS.length})` }}>
+            style={{ left: `calc(38px + (100% - 38px) * ${(firstFuture + 0.5) / MONTHS.length})` }}>
             <span>{t('today')}</span>
           </div>
         )}

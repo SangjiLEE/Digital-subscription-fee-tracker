@@ -32,6 +32,7 @@ export default function ScanBanner() {
   const [busy, setBusy] = useState(false);
   const [items, setItems] = useState<ScanItem[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [savingIdx, setSavingIdx] = useState<number | null>(null);
 
   /** 스캔 결과 → 저장용 SubRow (id 제외) */
   const toSub = (it: ScanItem): Omit<SubRow, 'id'> => {
@@ -42,7 +43,7 @@ export default function ScanBanner() {
       ? `${nm.getFullYear()}/${nm.getMonth() + 1}/${nm.getDate()}`
       : `${nm.getMonth() + 1}/${nm.getDate()}`;
     return {
-      name: it.name, plan: t('planCustom'), amt: it.amount, c: it.currency,
+      name: it.name, plan: '', amt: it.amount, c: it.currency,
       cat: it.cat, cycle: it.cycle, next, anchor, renew: 'auto',
       init: it.name[0].toUpperCase(),
     };
@@ -67,7 +68,12 @@ export default function ScanBanner() {
   };
 
   const drop = (it: ScanItem) => setItems(p => p.filter(x => x !== it));
-  const registerNow = (it: ScanItem) => { addSub(toSub(it)); drop(it); };
+  const registerNow = async (it: ScanItem, idx: number) => {
+    setSavingIdx(idx);
+    const ok = await addSub(toSub(it));
+    setSavingIdx(null);
+    if (ok) drop(it);            // 실패 시 카드 유지 (알림은 store가 표시)
+  };
   const edit = (it: ScanItem) => {
     const s = toSub(it);
     openDraft({ name: s.name, amt: s.amt, c: s.c, cycle: s.cycle, cat: s.cat, anchor: s.anchor });
@@ -99,9 +105,12 @@ export default function ScanBanner() {
             <small className="scan-conf"> {t('confidence', { p: Math.round(it.confidence * 100) })}</small>
           </span>
           <span className="scan-acts">
-            <button className="mini" onClick={() => registerNow(it)}>{t('register')}</button>
-            <button className="mini ghost" onClick={() => edit(it)}>{t('edit')}</button>
-            <button className="mini ghost" onClick={() => drop(it)}>{t('dismiss')}</button>
+            <button className="mini" disabled={savingIdx !== null}
+              onClick={() => registerNow(it, i)}>
+              {savingIdx === i ? t('adding') : t('register')}
+            </button>
+            <button className="mini ghost" disabled={savingIdx !== null} onClick={() => edit(it)}>{t('edit')}</button>
+            <button className="mini ghost" disabled={savingIdx !== null} onClick={() => drop(it)}>{t('dismiss')}</button>
           </span>
         </div>
       ))}

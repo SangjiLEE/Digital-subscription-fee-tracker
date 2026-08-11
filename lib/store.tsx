@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from './auth';
+import { useLang } from './i18n';
 import { refreshRates } from './fx';
 import type { Currency } from './types';
 
@@ -59,11 +60,11 @@ interface Store {
   subs: SubRow[]; oneTime: OneTimeRow[];
   isDemo: boolean;                    // true = 비로그인 데모 데이터 표시 중
   fxDate: string | null;              // 환율 기준일 (null = 폴백 환율)
-  addSub: (s: Omit<SubRow, 'id'>) => void;
-  updateSub: (id: string, patch: Partial<Omit<SubRow, 'id'>>) => void;
-  removeSub: (id: string) => void;
-  addOneTime: (o: Omit<OneTimeRow, 'id'>) => void;
-  removeOneTime: (id: string) => void;
+  addSub: (s: Omit<SubRow, 'id'>) => Promise<boolean>;
+  updateSub: (id: string, patch: Partial<Omit<SubRow, 'id'>>) => Promise<boolean>;
+  removeSub: (id: string) => Promise<boolean>;
+  addOneTime: (o: Omit<OneTimeRow, 'id'>) => Promise<boolean>;
+  removeOneTime: (id: string) => Promise<boolean>;
   modalOpen: boolean; setModalOpen: (v: boolean) => void;
   editing: SubRow | null; openEdit: (s: SubRow) => void;
   draft: Partial<Omit<SubRow, 'id'>> | null;      // 사진 인식 결과 프리필용
@@ -72,13 +73,13 @@ interface Store {
 
 const Ctx = createContext<Store | null>(null);
 
-const fail = (op: string) => (e: { code?: string }) => {
-  console.error(`${op} 실패:`, e?.code);
-  alert(`${op}에 실패했습니다.`);
-};
-
 export function StoreProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { t } = useLang();
+  const fail = (e: { code?: string }) => {
+    console.error('저장소 작업 실패:', e?.code);
+    alert(t('opFail'));
+  };
   const [cur, setCurState] = useState<Currency>('JPY');
   // 표시 통화: 기기에 저장 (홈 토글·설정 화면 공용)
   useEffect(() => {
@@ -120,10 +121,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) {
-      setSubs(SEED_SUBS);
-      setOneTime(SEED_ONETIME);
+      // 데모 데이터는 최초 방문자 전용 — 로그인 이력이 있는 기기는 빈 상태
+      let authedBefore = false;
+      try { authedBefore = localStorage.getItem('hasAuthed') === '1'; } catch {}
+      setSubs(authedBefore ? [] : SEED_SUBS);
+      setOneTime(authedBefore ? [] : SEED_ONETIME);
       return;
     }
+    try { localStorage.setItem('hasAuthed', '1'); } catch {}
     const subsQ = query(collection(db, 'users', user.uid, 'subs'), orderBy('createdAt'));
     const oneQ = query(collection(db, 'users', user.uid, 'oneTime'), orderBy('createdAt'));
     const unsub1 = onSnapshot(subsQ,
@@ -135,42 +140,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return () => { unsub1(); unsub2(); };
   }, [user]);
 
-  const addSub: Store['addSub'] = s => {
-    if (user) {
-      addDoc(collection(db, 'users', user.uid, 'subs'), { ...s, createdAt: serverTimestamp() })
-        .catch(fail('저장'));
-    } else {
-      setSubs(p => [...p, { ...s, id: crypto.randomUUID() }]);
-    }
+  // 각 작업은 완료 여부를 반환 — 호출부가 진행 표시(등록 중…)에 사용
+  const addSub: Store['addSub'] = async s => {
+    if (!user) { setSubs(p => [...p, { ...s, id: crypto.randomUUID() }]); return true; }
+    try { await addDoc(collection(db, 'users', user.uid, 'subs'), { ...s, createdAt: serverTimestamp() }); return true; }
+    catch (e) { fail(e as { code?: string }); return false; }
   };
-  const updateSub: Store['updateSub'] = (id, patch) => {
-    if (user) {
-      updateDoc(doc(db, 'users', user.uid, 'subs', id), patch).catch(fail('수정'));
-    } else {
-      setSubs(p => p.map(s => (s.id === id ? { ...s, ...patch } : s)));
-    }
+  const updateSub: Store['updateSub'] = async (id, patch) => {
+    if (!user) { setSubs(p => p.map(s => (s.id === id ? { ...s, ...patch } : s))); return true; }
+    try { await updateDoc(doc(db, 'users', user.uid, 'subs', id), patch); return true; }
+    catch (e) { fail(e as { code?: string }); return false; }
   };
-  const removeSub: Store['removeSub'] = id => {
-    if (user) {
-      deleteDoc(doc(db, 'users', user.uid, 'subs', id)).catch(fail('삭제'));
-    } else {
-      setSubs(p => p.filter(s => s.id !== id));
-    }
+  const removeSub: Store['removeSub'] = async id => {
+    if (!user) { setSubs(p => p.filter(s => s.id !== id)); return true; }
+    try { await deleteDoc(doc(db, 'users', user.uid, 'subs', id)); return true; }
+    catch (e) { fail(e as { code?: string }); return false; }
   };
-  const addOneTime: Store['addOneTime'] = o => {
-    if (user) {
-      addDoc(collection(db, 'users', user.uid, 'oneTime'), { ...o, createdAt: serverTimestamp() })
-        .catch(fail('저장'));
-    } else {
-      setOneTime(p => [...p, { ...o, id: crypto.randomUUID() }]);
-    }
+  const addOneTime: Store['addOneTime'] = async o => {
+    if (!user) { setOneTime(p => [...p, { ...o, id: crypto.randomUUID() }]); return true; }
+    try { await addDoc(collection(db, 'users', user.uid, 'oneTime'), { ...o, createdAt: serverTimestamp() }); return true; }
+    catch (e) { fail(e as { code?: string }); return false; }
   };
-  const removeOneTime: Store['removeOneTime'] = id => {
-    if (user) {
-      deleteDoc(doc(db, 'users', user.uid, 'oneTime', id)).catch(fail('삭제'));
-    } else {
-      setOneTime(p => p.filter(o => o.id !== id));
-    }
+  const removeOneTime: Store['removeOneTime'] = async id => {
+    if (!user) { setOneTime(p => p.filter(o => o.id !== id)); return true; }
+    try { await deleteDoc(doc(db, 'users', user.uid, 'oneTime', id)); return true; }
+    catch (e) { fail(e as { code?: string }); return false; }
   };
 
   const openEdit = (s: SubRow) => { setDraft(null); setEditing(s); setModalOpen(true); };

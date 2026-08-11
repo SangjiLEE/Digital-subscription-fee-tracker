@@ -6,6 +6,10 @@ import { nextChargeDate } from '@/lib/monthly';
 import { useStore, CATCOLOR, type Cat, type SubRow } from '@/lib/store';
 
 const ORDER: Cat[] = ['ai', 'dev', 'ent', 'sto', 'etc'];
+// 구버전 데이터에 언어별로 박제된 '커스텀' 플랜명 — 표시 시점에 현재 언어로 통일
+const CUSTOM_SENTINELS = ['커스텀', 'カスタム', 'Custom'];
+export const planLabel = (plan: string, t: (k: string) => string) =>
+  !plan || CUSTOM_SENTINELS.includes(plan) ? t('planCustom') : plan;
 const CAT_KEY: Record<Cat, string> = {
   ai: 'catAi', dev: 'catDev', ent: 'catEnt', sto: 'catSto', etc: 'catEtc',
 };
@@ -59,7 +63,7 @@ export default function SubList() {
                     <div className="r-icon" style={{ background: CATCOLOR[s.cat] }}>{s.init}</div>
                     <div className="r-body">
                       <div className="r-name">{s.name}</div>
-                      <div className="r-meta">{s.plan} · {s.cycle === 'year' ? t('yearly') : t('monthly')}</div>
+                      <div className="r-meta">{planLabel(s.plan, t)} · {s.cycle === 'year' ? t('yearly') : t('monthly')}</div>
                     </div>
                     <div className="r-right">
                       <div className="r-amt">{fmt(toJPY(s.amt, s.c), cur)}</div>

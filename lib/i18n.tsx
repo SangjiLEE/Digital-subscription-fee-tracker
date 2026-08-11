@@ -127,6 +127,9 @@ const DICT: Record<string, Record<Lang, string>> = {
   regionKR:     { ko: '한국 (KR)', ja: '韓国 (KR)', en: 'Korea (KR)' },
   regionUS:     { ko: '미국 (US)', ja: '米国 (US)', en: 'US' },
   listFooter:   { ko: '행을 누르면 수정 · ×로 삭제', ja: '行をタップで編集 · ×で削除', en: 'Tap a row to edit · × to delete' },
+  adding:       { ko: '등록 중…', ja: '登録中…', en: 'Adding…' },
+  saving:       { ko: '저장 중…', ja: '保存中…', en: 'Saving…' },
+  opFail:       { ko: '처리에 실패했습니다. 잠시 후 다시 시도해주세요.', ja: '処理に失敗しました。しばらくして再試行してください。', en: 'Something went wrong. Please try again.' },
 };
 
 interface LangCtx {

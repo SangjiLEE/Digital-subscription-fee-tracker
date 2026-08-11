@@ -1,4 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -14,6 +15,20 @@ const firebaseConfig = {
 };
 
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// App Check (reCAPTCHA v3) — 사이트 키가 설정된 경우에만 활성화.
+// 키 없이도 앱은 정상 동작 (AI Logic은 모니터링 모드 유지 필요).
+const recaptchaKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+if (typeof window !== 'undefined' && recaptchaKey) {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(recaptchaKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (e) {
+    console.warn('App Check 초기화 실패:', e);
+  }
+}
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();

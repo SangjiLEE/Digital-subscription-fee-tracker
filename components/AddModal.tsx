@@ -64,6 +64,7 @@ export default function AddModal() {
   const [cycle, setCycle] = useState<CycleV>('month');
   const [renew, setRenew] = useState<RenewV>('auto');
   const [date, setDate] = useState(todayStr());
+  const [saving, setSaving] = useState(false);
 
   // 수정 모드: 대상 구독으로 폼 프리필
   useEffect(() => {
@@ -103,14 +104,17 @@ export default function AddModal() {
   const pickSvc = (s: CatalogSvc) => { setSvc(s); setPlan(null); setName(s.name); };
   const pickPlan = (p: CatalogPlan) => { setPlan(p); setAmt(String(p.amt)); setCurSel(p.c); };
 
-  const save = () => {
+  const save = async () => {
+    if (saving) return;
     const amount = parseFloat(amt);
     if (!name.trim() || !amount) { alert(t('validateMsg')); return; }
     const d = new Date(date + 'T00:00:00');
     if (renew === 'one') {
-      addOneTime({ name: name.trim(), note: t('paidNote', { d: `${d.getMonth() + 1}/${d.getDate()}` }),
+      setSaving(true);
+      const ok = await addOneTime({ name: name.trim(), note: t('paidNote', { d: `${d.getMonth() + 1}/${d.getDate()}` }),
         amt: amount, c: curSel, init: name.trim()[0].toUpperCase(), date });
-      close(); router.push('/list');
+      setSaving(false);
+      if (ok) { close(); router.push('/list'); }
       return;
     }
     const nm = new Date(d);
@@ -123,16 +127,16 @@ export default function AddModal() {
       anchor: date, renew: renew === 'manual' ? 'manual' as const : 'auto' as const,
       init: name.trim()[0].toUpperCase(),
     };
-    if (editing) {
-      updateSub(editing.id, {
-        ...base,
-        plan: plan ? plan.n : editing.plan.replace(' · 수동갱신', ''),
-        cat: svc ? svc.cat : editing.cat,
-      });
-    } else {
-      addSub({ ...base, plan: plan ? plan.n : t('planCustom'), cat: svc ? svc.cat : (draft?.cat ?? 'etc') });
-    }
-    close(); router.push('/list');
+    setSaving(true);
+    const ok = editing
+      ? await updateSub(editing.id, {
+          ...base,
+          plan: plan ? plan.n : editing.plan.replace(' · 수동갱신', ''),
+          cat: svc ? svc.cat : editing.cat,
+        })
+      : await addSub({ ...base, plan: plan ? plan.n : '', cat: svc ? svc.cat : (draft?.cat ?? 'etc') });
+    setSaving(false);
+    if (ok) { close(); router.push('/list'); }
   };
 
   return (
@@ -204,7 +208,7 @@ export default function AddModal() {
           </div>
         </div>
 
-        <button className="m-save" onClick={save}>{editing ? t('saveEdit') : t('saveNew')}</button>
+        <button className="m-save" onClick={save} disabled={saving}>{saving ? t('saving') : editing ? t('saveEdit') : t('saveNew')}</button>
       </div>
     </div>
   );
