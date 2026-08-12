@@ -7,10 +7,12 @@ import { fmt } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { computeMonths, colTotal, daysUntil, nextChargeDate } from '@/lib/monthly';
 import { useStore } from '@/lib/store';
+import { useMounted } from '@/lib/useMounted';
 
 export default function Home() {
   const { cur, subs, oneTime, fxDate, renewAlert, isDemo } = useStore();
   const { t, mon } = useLang();
+  const mounted = useMounted();
   // fxDate 의존: 환율 갱신 시 재계산
   const months = useMemo(() => computeMonths(subs, oneTime), [subs, oneTime, fxDate]);
   const subOnly = useMemo(() => computeMonths(subs), [subs, fxDate]);
@@ -23,6 +25,8 @@ export default function Home() {
         .filter(x => x.d && daysUntil(x.d) >= 0 && daysUntil(x.d) <= 3)
         .sort((a, b) => daysUntil(a.d!) - daysUntil(b.d!))
     : [], [subs, renewAlert, fxDate]);
+
+  if (!mounted) return <main><div className="page-skel" aria-hidden="true"><i /><i /><i /></div></main>;
 
   return (
     <main>

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { LANG_NAME, useLang, type Lang } from '@/lib/i18n';
 import { useStore, type Region } from '@/lib/store';
+import { useMounted } from '@/lib/useMounted';
 import { SYM } from '@/lib/fx';
 import type { Currency } from '@/lib/types';
 
@@ -17,6 +18,8 @@ export default function SettingsPage() {
   const { cur, setCur, region, setRegion, renewAlert, setRenewAlert } = useStore();
   const { lang, setLang, t } = useLang();
   const tz = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : '';
+  const mounted = useMounted();
+  if (!mounted) return <main><div className="page-skel" aria-hidden="true"><i /><i /><i /></div></main>;
 
   return (
     <main>
