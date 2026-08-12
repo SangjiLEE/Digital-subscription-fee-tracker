@@ -65,6 +65,7 @@ export default function AddModal() {
   const [renew, setRenew] = useState<RenewV>('auto');
   const [date, setDate] = useState(todayStr());
   const [saving, setSaving] = useState(false);
+  const [catSel, setCatSel] = useState<Cat>('etc');
 
   // 수정 모드: 대상 구독으로 폼 프리필
   useEffect(() => {
@@ -75,6 +76,7 @@ export default function AddModal() {
       setCycle(editing.cycle);
       setRenew(editing.renew === 'manual' || editing.plan.includes('수동갱신') ? 'manual' : 'auto');
       setDate(editing.anchor ?? todayStr());
+      setCatSel(editing.cat);
       setSvc(null); setPlan(null);
     }
   }, [editing, modalOpen]);
@@ -87,6 +89,7 @@ export default function AddModal() {
       if (draft.c) setCurSel(draft.c);
       if (draft.cycle) setCycle(draft.cycle);
       if (draft.anchor) setDate(draft.anchor);
+      if (draft.cat) setCatSel(draft.cat);
       setRenew('auto'); setSvc(null); setPlan(null);
     }
   }, [draft, modalOpen, editing]);
@@ -100,11 +103,11 @@ export default function AddModal() {
 
   const reset = () => {
     setName(''); setSvc(null); setPlan(null); setAmt('');
-    setCurSel('JPY'); setCycle('month'); setRenew('auto'); setDate(todayStr());
+    setCurSel('JPY'); setCycle('month'); setRenew('auto'); setDate(todayStr()); setCatSel('etc');
   };
   const close = () => { setModalOpen(false); reset(); };
 
-  const pickSvc = (s: CatalogSvc) => { setSvc(s); setPlan(null); setName(s.name); };
+  const pickSvc = (s: CatalogSvc) => { setSvc(s); setPlan(null); setName(s.name); setCatSel(s.cat); };
   const pickPlan = (p: CatalogPlan) => { setPlan(p); setAmt(String(p.amt)); setCurSel(p.c); };
 
   const save = async () => {
@@ -135,9 +138,9 @@ export default function AddModal() {
       ? await updateSub(editing.id, {
           ...base,
           plan: plan ? plan.n : editing.plan.replace(' · 수동갱신', ''),
-          cat: svc ? svc.cat : editing.cat,
+          cat: catSel,
         })
-      : await addSub({ ...base, plan: plan ? plan.n : '', cat: svc ? svc.cat : (draft?.cat ?? 'etc') });
+      : await addSub({ ...base, plan: plan ? plan.n : '', cat: catSel });
     setSaving(false);
     if (ok) { close(); router.push('/list'); }
   };
@@ -184,6 +187,20 @@ export default function AddModal() {
             </select>
           </div>
         </div>
+
+        {renew !== 'one' && (
+          <div className="fld">
+            <label htmlFor="fCat">{t('category')}</label>
+            <select id="fCat" className="cat-select" value={catSel}
+              onChange={e => setCatSel(e.target.value as Cat)}>
+              {(['ai', 'dev', 'ent', 'sto', 'etc'] as Cat[]).map(c => (
+                <option key={c} value={c}>
+                  {t({ ai: 'catAi', dev: 'catDev', ent: 'catEnt', sto: 'catSto', etc: 'catEtc' }[c])}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={`fld ${renew === 'one' ? 'off' : ''}`}>
           <label>{t('cycle')}</label>

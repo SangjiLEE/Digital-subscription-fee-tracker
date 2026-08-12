@@ -147,6 +147,7 @@ const DICT: Record<string, Record<Lang, string>> = {
   alertSingle:  { ko: '{name} — {when} 갱신', ja: '{name} — {when}更新', en: '{name} renews {when}' },
   alertMultiN:  { ko: '3일 안에 {n}건 갱신 — {name} {when}', ja: '3日以内に{n}件更新 — {name} {when}', en: '{n} renew within 3 days — {name} {when}' },
   monthlyEquiv: { ko: '월 환산 약 {v}', ja: '月換算 約 {v}', en: '≈ {v}/month' },
+  category:     { ko: '카테고리', ja: 'カテゴリ', en: 'Category' },
 };
 
 interface LangCtx {

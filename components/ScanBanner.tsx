@@ -29,11 +29,11 @@ function toAnchor(it: ScanItem): string | undefined {
  * 업로드 시작은 + 버튼 메뉴(TabNav)에서.
  */
 export default function ScanBanner() {
-  const { openDraft, addSub, scanBusy, scanItems, scanNotice, dropScanItem, retryScan, cancelScan, setModalOpen } = useStore();
+  const { openDraft, addSub, scanItems, scanNotice, dropScanItem, retryScan, cancelScan, setModalOpen } = useStore();
   const { t } = useLang();
   const [savingIdx, setSavingIdx] = useState<number | null>(null);
 
-  if (!scanBusy && !scanItems.length && !scanNotice) return null;
+  if (!scanItems.length && !scanNotice) return null;   // 진행 표시는 전역 오버레이(ScanOverlay)
 
   /** 스캔 결과 → 저장용 SubRow (id 제외) */
   const toSub = (it: ScanItem): Omit<SubRow, 'id'> => {
@@ -73,14 +73,6 @@ export default function ScanBanner() {
   return (
     <section>
       <div className="sec-head"><h2>{t('scanTitle')}</h2><span className="hint">{t('scanPrivacy')}</span></div>
-      {scanBusy && (
-        <div className="scan-notice">
-          {t('scanning')}
-          <span className="scan-acts-row">
-            <button className="mini ghost" onClick={cancelScan}>{t('cancelBtn')}</button>
-          </span>
-        </div>
-      )}
       {scanNotice && (
         <div className="scan-notice">
           {scanNotice}

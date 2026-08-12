@@ -387,3 +387,24 @@
   .page-skel i:nth-child(2){height:220px}
   .page-skel i:nth-child(3){height:160px}
   @keyframes skel{from{opacity:1}to{opacity:.55}}
+
+  /* 사진 인식 오버레이 */
+  .scan-overlay{align-items:center;padding:24px}
+  .scan-card{
+    max-width:300px;border-radius:18px;text-align:center;
+    padding:26px 22px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .spinner{
+    width:30px;height:30px;border-radius:50%;
+    border:3px solid var(--line);border-top-color:var(--ink);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .sc-title{font-size:15px;font-weight:700}
+  .sc-desc{font-size:11px;color:var(--ink-soft);line-height:1.5}
+
+  .cat-select{
+    width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card);
+    font-family:inherit;font-size:14px;color:var(--ink);padding:11px 12px;cursor:pointer;
+  }
+  .cat-select:focus-visible{outline:2px solid var(--c-ai);outline-offset:1px}
