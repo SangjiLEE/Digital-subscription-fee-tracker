@@ -3,16 +3,12 @@ import ScanBanner from '@/components/ScanBanner';
 import { fmt, toJPY } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { nextChargeDate } from '@/lib/monthly';
-import { useStore, CATCOLOR, type Cat, type SubRow } from '@/lib/store';
+import { useStore, CATCOLOR, CAT_ORDER, CAT_KEY, type SubRow } from '@/lib/store';
 
-const ORDER: Cat[] = ['ai', 'dev', 'ent', 'sto', 'etc'];
 // 구버전 데이터에 언어별로 박제된 '커스텀' 플랜명 — 표시 시점에 현재 언어로 통일
 const CUSTOM_SENTINELS = ['커스텀', 'カスタム', 'Custom'];
 export const planLabel = (plan: string, t: (k: string) => string) =>
   !plan || CUSTOM_SENTINELS.includes(plan) ? t('planCustom') : plan;
-const CAT_KEY: Record<Cat, string> = {
-  ai: 'catAi', dev: 'catDev', ent: 'catEnt', sto: 'catSto', etc: 'catEtc',
-};
 
 /** 카테고리별 그룹 + 월 환산 소계 (연결제는 /12). 행 탭 = 수정, × = 삭제 */
 export default function SubList() {
@@ -41,7 +37,7 @@ export default function SubList() {
         {subs.length === 0 && (
           <div className="sub-card"><div className="renew-empty">{t('emptySubs')}</div></div>
         )}
-        {ORDER.map(cat => {
+        {CAT_ORDER.map(cat => {
           const items = subs.filter(s => s.cat === cat);
           if (!items.length) return null;
           const subtotal = items.reduce(

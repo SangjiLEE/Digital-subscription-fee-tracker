@@ -11,7 +11,10 @@ export interface MonthCol {
   ai: number; dev: number; ent: number; sto: number; etc: number;
 }
 
-const CATS: Cat[] = ['ai', 'dev', 'ent', 'sto', 'etc'];
+// 차트 세그먼트 키 — 신규 카테고리(prod/game/ins)는 '기타'로 접는다 (팔레트 4색+기타 유지)
+const CHART_CATS = ['ai', 'dev', 'ent', 'sto'] as const;
+const toChartCat = (c: Cat): 'ai' | 'dev' | 'ent' | 'sto' | 'etc' =>
+  (CHART_CATS as readonly string[]).includes(c) ? c as 'ai' | 'dev' | 'ent' | 'sto' : 'etc';
 
 /** 연결제 next 'YYYY/M/D' → 월(0-base). 파싱 불가면 null */
 function yearNextMonth(next: string): number | null {
@@ -38,7 +41,7 @@ export function computeMonths(subs: SubRow[], oneTime: OneTimeRow[] = [], now = 
       ai: 0, dev: 0, ent: 0, sto: 0, etc: 0,
     };
     for (const s of subs) {
-      const cat: Cat = CATS.includes(s.cat) ? s.cat : 'etc';
+      const cat = toChartCat(s.cat);
       const jpy = toJPY(s.amt, s.c);
       if (s.cycle === 'month') {
         // anchor 이전 월에는 청구 없음 (anchor 미상이면 전 기간 청구로 간주)

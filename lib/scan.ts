@@ -26,7 +26,7 @@ const schema = Schema.array({
       amount: Schema.number(),
       currency: Schema.enumString({ enum: ['JPY', 'USD', 'KRW'] }),
       cycle: Schema.enumString({ enum: ['month', 'year'] }),
-      cat: Schema.enumString({ enum: ['ai', 'dev', 'ent', 'sto', 'etc'] }),
+      cat: Schema.enumString({ enum: ['ai', 'dev', 'ent', 'sto', 'prod', 'game', 'ins', 'etc'] }),
       chargeDate: Schema.string(),
       confidence: Schema.number(),
     },
@@ -41,7 +41,7 @@ const PROMPT = `이미지에서 "정기 구독 서비스"의 결제 정보를 �
 - amount: 숫자만 (통화 기호·콤마 제거). 세금 포함 총액 우선
 - currency: JPY/USD/KRW 중 하나. 그 외 통화 항목은 제외
 - cycle: 월 구독이면 month, 연 구독이면 year. 판단 불가면 month
-- cat: ai(AI·LLM), dev(개발·인프라·생산성 도구), ent(영상·음악·게임), sto(클라우드 저장소), etc(그 외)
+- cat: ai(AI·LLM), dev(개발·인프라), ent(영상·음악), sto(클라우드 저장소), prod(생산성·문서·노트), game(게임), ins(보험·보증·케어 — AppleCare 등), etc(그 외)
 - chargeDate: 이미지에 보이는 날짜 (YYYY-MM-DD). 다음 갱신일("Renews ...", "Next Billing Date")이 있으면 그것을 우선, 없으면 결제일·청구일. 연도가 없으면 문맥상 가장 가까운 미래 연도로. 날짜가 전혀 없으면 생략
 - confidence: 추출 확신도 0~1
 - 구독이 아닌 일반 구매(물건·음식 등)는 제외. 아무것도 없으면 빈 배열 []`;

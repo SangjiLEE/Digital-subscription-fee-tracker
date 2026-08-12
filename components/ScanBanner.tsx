@@ -3,11 +3,7 @@ import { useState } from 'react';
 import { SYM } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import type { ScanItem } from '@/lib/scan';
-import { useStore, type SubRow, type Cat } from '@/lib/store';
-
-const CAT_KEY: Record<Cat, string> = {
-  ai: 'catAi', dev: 'catDev', ent: 'catEnt', sto: 'catSto', etc: 'catEtc',
-};
+import { useStore, CAT_KEY, type SubRow } from '@/lib/store';
 
 const fmtDate = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -29,11 +25,11 @@ function toAnchor(it: ScanItem): string | undefined {
  * 업로드 시작은 + 버튼 메뉴(TabNav)에서.
  */
 export default function ScanBanner() {
-  const { openDraft, addSub, scanItems, scanNotice, dropScanItem, retryScan, cancelScan, setModalOpen } = useStore();
+  const { openDraft, addSub, scanItems, dropScanItem } = useStore();
   const { t } = useLang();
   const [savingIdx, setSavingIdx] = useState<number | null>(null);
 
-  if (!scanItems.length && !scanNotice) return null;   // 진행 표시는 전역 오버레이(ScanOverlay)
+  if (!scanItems.length) return null;   // 진행·실패 표시는 전역 오버레이(ScanOverlay)
 
   /** 스캔 결과 → 저장용 SubRow (id 제외) */
   const toSub = (it: ScanItem): Omit<SubRow, 'id'> => {
@@ -73,16 +69,6 @@ export default function ScanBanner() {
   return (
     <section>
       <div className="sec-head"><h2>{t('scanTitle')}</h2><span className="hint">{t('scanPrivacy')}</span></div>
-      {scanNotice && (
-        <div className="scan-notice">
-          {scanNotice}
-          <span className="scan-acts-row">
-            <button className="mini" onClick={retryScan}>{t('retry')}</button>
-            <button className="mini ghost" onClick={() => { cancelScan(); setModalOpen(true); }}>{t('enterManually')}</button>
-            <button className="mini ghost" onClick={cancelScan}>{t('cancelBtn')}</button>
-          </span>
-        </div>
-      )}
       {scanItems.map((it, i) => (
         <div className="inbox-banner scan-item" key={`${it.name}-${i}`}>
           <span>

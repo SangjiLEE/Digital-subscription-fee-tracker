@@ -17,13 +17,22 @@ import type { Currency } from './types';
  * UI 행 타입(SubRow)은 목업 유래의 축약형 — docs/schema.md의 전체
  * Subscription 스키마로의 마이그레이션은 카탈로그 연동 때 진행.
  */
-export type Cat = 'ai' | 'dev' | 'ent' | 'sto' | 'etc';
+export type Cat = 'ai' | 'dev' | 'ent' | 'sto' | 'prod' | 'game' | 'ins' | 'etc';
 export type Region = 'JP' | 'KR' | 'US';
 export const CATNAME: Record<Cat, string> = {
-  ai: 'AI·LLM', dev: '개발·인프라', ent: '영상·음악', sto: '클라우드·스토리지', etc: '기타',
+  ai: 'AI·LLM', dev: '개발·인프라', ent: '영상·음악', sto: '클라우드·스토리지',
+  prod: '생산성·문서', game: '게임', ins: '보험·케어', etc: '기타',
 };
+/** 목록 그룹 점 색 (라벨이 항상 병기되므로 색 단독 식별 아님).
+ *  차트는 검증된 4색+기타만 사용 — prod/game/ins는 차트에서 '기타'로 합산 */
 export const CATCOLOR: Record<Cat, string> = {
-  ai: 'var(--c-ai)', dev: 'var(--c-dev)', ent: 'var(--c-ent)', sto: 'var(--c-sto)', etc: '#B7C0CC',
+  ai: 'var(--c-ai)', dev: 'var(--c-dev)', ent: 'var(--c-ent)', sto: 'var(--c-sto)',
+  prod: '#C2589E', game: '#6B7F2A', ins: '#AD5A48', etc: '#B7C0CC',
+};
+export const CAT_ORDER: Cat[] = ['ai', 'dev', 'ent', 'sto', 'prod', 'game', 'ins', 'etc'];
+export const CAT_KEY: Record<Cat, string> = {
+  ai: 'catAi', dev: 'catDev', ent: 'catEnt', sto: 'catSto',
+  prod: 'catProd', game: 'catGame', ins: 'catIns', etc: 'catEtc',
 };
 
 export interface SubRow {

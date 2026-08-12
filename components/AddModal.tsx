@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SYM, fmt, toJPY } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
-import { useStore, type Cat, type Region } from '@/lib/store';
+import { useStore, CAT_ORDER, CAT_KEY, type Cat, type Region } from '@/lib/store';
 import type { Currency } from '@/lib/types';
 
 interface CatalogPlan { n: string; amt: number; c: Currency; }
@@ -193,10 +193,8 @@ export default function AddModal() {
             <label htmlFor="fCat">{t('category')}</label>
             <select id="fCat" className="cat-select" value={catSel}
               onChange={e => setCatSel(e.target.value as Cat)}>
-              {(['ai', 'dev', 'ent', 'sto', 'etc'] as Cat[]).map(c => (
-                <option key={c} value={c}>
-                  {t({ ai: 'catAi', dev: 'catDev', ent: 'catEnt', sto: 'catSto', etc: 'catEtc' }[c])}
-                </option>
+              {CAT_ORDER.map(c => (
+                <option key={c} value={c}>{t(CAT_KEY[c])}</option>
               ))}
             </select>
           </div>

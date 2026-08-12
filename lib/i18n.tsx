@@ -40,6 +40,9 @@ const DICT: Record<string, Record<Lang, string>> = {
   catSto:       { ko: '클라우드·스토리지', ja: 'クラウド・ストレージ', en: 'Cloud Storage' },
   catStoShort:  { ko: '스토리지', ja: 'ストレージ', en: 'Storage' },
   catEtc:       { ko: '기타', ja: 'その他', en: 'Other' },
+  catProd:      { ko: '생산성·문서', ja: '生産性・ドキュメント', en: 'Productivity' },
+  catGame:      { ko: '게임', ja: 'ゲーム', en: 'Games' },
+  catIns:       { ko: '보험·케어', ja: '保険・ケア', en: 'Insurance & Care' },
   // 차트
   detailOf:     { ko: '{mon} 내역', ja: '{mon}の内訳', en: '{mon} breakdown' },
   paidTag:      { ko: '결제 완료', ja: '支払い済み', en: 'Paid' },

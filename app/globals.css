@@ -408,3 +408,7 @@
     font-family:inherit;font-size:14px;color:var(--ink);padding:11px 12px;cursor:pointer;
   }
   .cat-select:focus-visible{outline:2px solid var(--c-ai);outline-offset:1px}
+
+  .sc-icon{font-size:26px;line-height:1}
+  .sc-error{white-space:pre-line;word-break:break-all;color:var(--ink)}
+  .sc-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
