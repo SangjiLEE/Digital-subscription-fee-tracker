@@ -83,6 +83,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (authBusy) return;                      // 중복 클릭 방지
     setAuthBusy(true);
     setTimeout(() => setAuthBusy(false), 15_000);  // 안전 타임아웃
+
+    // 모바일(터치 기기): One Tap을 기다리지 않고 클릭 제스처가 살아있는
+    // 지금 즉시 팝업을 연다 — 타이머 경유 팝업은 차단되어 리다이렉트
+    // (핸들러 멈춤 이슈)로 빠지기 때문
+    const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+    if (coarse) { popupSignIn(); return; }
+
     withGsi(() => {
       const gid = window.google.accounts.id;
       gid.initialize({
