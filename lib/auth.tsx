@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   GoogleAuthProvider, onAuthStateChanged, signInWithCredential,
   signInWithPopup, signInWithRedirect, signOut as fbSignOut,
@@ -60,6 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [authBusy, setAuthBusy] = useState(false);
+  const userRef = useRef<User | null>(null);
+  useEffect(() => { userRef.current = user; }, [user]);
 
   // 로그인 완료(user 도착) 시 진행 상태 해제
   useEffect(() => { if (user) setAuthBusy(false); }, [user]);
@@ -91,12 +93,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .catch(e => { setAuthBusy(false); reportFail(e); });
         },
       });
+      // FedCM에서는 moment 상태 메서드가 동작하지 않을 수 있음(GSI 경고)
+      // → 콜백이 오면 활용하되, 일정 시간 내 아무 신호가 없으면 팝업으로 전환
+      let momentFired = false;
+      let fellBack = false;
+      const fallbackToPopup = () => {
+        if (fellBack || userRef.current) return;
+        fellBack = true;
+        try { gid.cancel?.(); } catch { /* One Tap 미표시 시 무해 */ }
+        popupSignIn();
+      };
       gid.prompt((moment: any) => {
+        momentFired = true;
         const skipped = moment?.isSkippedMoment?.() || moment?.isNotDisplayed?.();
         const dismissed = moment?.isDismissedMoment?.();
-        if (skipped) popupSignIn();
+        if (skipped) fallbackToPopup();
         else if (dismissed) setAuthBusy(false);
       });
+      setTimeout(() => { if (!momentFired) fallbackToPopup(); }, 2500);
     }, popupSignIn);
   };
 
