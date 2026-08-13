@@ -23,9 +23,10 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx>({ user: null, loading: true, authBusy: false, signIn: () => {}, signOut: () => {} });
 
-function reportFail(e: { code?: string } | undefined) {
-  console.error('로그인 실패:', e?.code);
-  alert(`로그인에 실패했습니다. 잠시 후 다시 시도해주세요.\n(오류 코드: ${e?.code ?? '알 수 없음'})`);
+function reportFail(e: { code?: string; message?: string } | undefined) {
+  console.error('로그인 실패:', e?.code, e?.message);
+  const detail = e?.code ?? e?.message?.slice(0, 120) ?? '알 수 없음';
+  alert(`로그인에 실패했습니다. 잠시 후 다시 시도해주세요.\n(${detail})`);
 }
 
 /** 팝업 방식 (차단 시 리다이렉트 폴백). onSettle: 진행 상태 해제용 */
@@ -100,24 +101,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .catch(e => { setAuthBusy(false); reportFail(e); });
         },
       });
-      // FedCM에서는 moment 상태 메서드가 동작하지 않을 수 있음(GSI 경고)
-      // → 콜백이 오면 활용하되, 일정 시간 내 아무 신호가 없으면 팝업으로 전환
-      let momentFired = false;
-      let fellBack = false;
-      const fallbackToPopup = () => {
-        if (fellBack || userRef.current) return;
-        fellBack = true;
-        try { gid.cancel?.(); } catch { /* One Tap 미표시 시 무해 */ }
-        popupSignIn();
-      };
       gid.prompt((moment: any) => {
-        momentFired = true;
+        if (userRef.current) return;
         const skipped = moment?.isSkippedMoment?.() || moment?.isNotDisplayed?.();
         const dismissed = moment?.isDismissedMoment?.();
-        if (skipped) fallbackToPopup();
+        if (skipped) popupSignIn();
         else if (dismissed) setAuthBusy(false);
       });
-      setTimeout(() => { if (!momentFired) fallbackToPopup(); }, 2500);
     }, popupSignIn);
   };
 
