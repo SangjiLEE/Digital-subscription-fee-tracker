@@ -1,6 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import {
+  initializeAuth, browserLocalPersistence, browserPopupRedirectResolver, GoogleAuthProvider,
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // 웹 클라이언트 설정값 — 비밀이 아니라 식별자이며 번들에 포함되는 게 정상.
@@ -29,6 +31,11 @@ if (typeof window !== 'undefined' && recaptchaKey) {
     console.warn('App Check 초기화 실패:', e);
   }
 }
-export const auth = getAuth(app);
+// 인증 영속화는 localStorage 사용 — IndexedDB는 크롬에서 간헐적으로
+// 연결이 닫혀("Database is closing/hidden") 로그인 결과 저장이 실패함
+export const auth = initializeAuth(app, {
+  persistence: browserLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
