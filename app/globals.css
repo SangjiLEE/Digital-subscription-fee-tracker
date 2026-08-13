@@ -88,7 +88,7 @@
   }
   .bars{position:absolute;top:0;bottom:0;left:38px;right:0;display:flex;align-items:flex-end;gap:10px}
   .bar-col{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
     gap:4px;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;
   }
   .bar{
@@ -317,6 +317,7 @@
   .soon{
     font-style:normal;font-size:10px;font-weight:600;color:var(--ink-soft);
     border:1px solid var(--line);border-radius:99px;padding:2px 8px;margin-left:8px;
+    white-space:nowrap;flex:none;
   }
   .set-note{font-size:11px;color:var(--ink-soft);margin:8px 4px 0;line-height:1.5}
   .set-link{color:var(--c-ai);text-decoration:underline}
@@ -412,3 +413,35 @@
   .sc-icon{font-size:26px;line-height:1}
   .sc-error{white-space:pre-line;word-break:break-all;color:var(--ink)}
   .sc-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+
+  /* ---------- 모바일 반응형 (≤480px) ---------- */
+  @media (max-width:480px){
+    body{padding:0}
+    .phone{max-width:none;border-radius:0;box-shadow:none;min-height:100vh}
+    /* 헤더 한 줄 고정 */
+    header{padding:14px 16px 8px;gap:8px}
+    .wordmark{font-size:14px;white-space:nowrap}
+    .wordmark small{margin-left:6px;padding:2px 5px;font-size:9px}
+    .login-btn{white-space:nowrap;font-size:12px;padding:7px 12px;flex:none;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+    /* 배지·안내 */
+    .soon{white-space:nowrap}
+    .demo-note{margin:8px 16px 0}
+    .renew-alert{margin:8px 16px 0}
+    section{padding:16px 16px 0}
+    .total{padding:8px 16px 16px}
+    .total .amount{font-size:38px}
+    /* 차트: 값 라벨은 선택 막대만, 예정 접미사 숨김(빗금이 구분자) */
+    .bars{gap:6px;left:34px}
+    .trend,.trend-dots{left:34px;width:calc(100% - 34px)}
+    .bar-val{display:none}
+    .bar-col.sel .bar-val{display:block;font-size:9px}
+    .bar-labels{gap:6px;padding-left:34px}
+    .bar-labels span{white-space:nowrap;font-size:10px}
+    .bar-labels small{display:none}
+    /* 인식 카드 버튼 줄바꿈 허용 */
+    .scan-item{flex-wrap:wrap;gap:8px}
+    .scan-acts{margin-left:auto}
+    /* 목록 행 이름 말줄임 */
+    .r-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .r-meta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  }
