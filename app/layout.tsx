@@ -9,6 +9,7 @@ import TabNav from '@/components/TabNav';
 import WelcomeModal from '@/components/WelcomeModal';
 import AddModal from '@/components/AddModal';
 import ScanOverlay from '@/components/ScanOverlay';
+import Feedback from '@/components/Feedback';
 
 export const metadata: Metadata = {
   title: 'Digital Sub Fee Tracker — 디지털 구독료 트래커',
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <WelcomeModal />
               <AddModal />
               <ScanOverlay />
+              <Feedback />
             </div>
           </StoreProvider>
         </AuthProvider>

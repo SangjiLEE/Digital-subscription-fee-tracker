@@ -1,5 +1,5 @@
 import { toJPY } from './fx';
-import type { OneTimeRow, SubRow, Cat } from './store';
+import { isActive, type OneTimeRow, type SubRow, type Cat } from './store';
 
 /**
  * 구독 목록 → 월별 카테고리 지출 집계 (JPY 환산, 오늘 환율 기준 D8).
@@ -9,6 +9,8 @@ import type { OneTimeRow, SubRow, Cat } from './store';
 export interface MonthCol {
   label: string; past: boolean; m: number;   // m: 1-base 월 번호 (표시용)
   ai: number; dev: number; ent: number; sto: number; etc: number;
+  /** 접기 전 원본 카테고리별 금액 — 월 상세 표시용 (일회성은 etc) */
+  detail: Partial<Record<Cat, number>>;
 }
 
 // 차트 세그먼트 키 — 신규 카테고리(prod/game/ins)는 '기타'로 접는다 (팔레트 4색+기타 유지)
@@ -32,38 +34,56 @@ function oneTimeMonth(o: OneTimeRow, now: Date): Date | null {
   return m ? new Date(now.getFullYear(), parseInt(m[1], 10) - 1, 1) : null;
 }
 
+/** 해지·일시정지 구독의 청구 상한일. active면 null (제한 없음) */
+function chargeCutoff(s: SubRow, now: Date): Date | null {
+  if (isActive(s)) return null;
+  const e = s.endDate ? new Date(s.endDate + 'T00:00:00') : now;
+  return Number.isNaN(e.getTime()) ? now : e;
+}
+
 export function computeMonths(subs: SubRow[], oneTime: OneTimeRow[] = [], now = new Date()): MonthCol[] {
   const cols: MonthCol[] = [];
   for (let off = -3; off <= 2; off++) {
     const d = new Date(now.getFullYear(), now.getMonth() + off, 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
     const col: MonthCol = {
       label: `${d.getMonth() + 1}월`, past: off < 0, m: d.getMonth() + 1,
-      ai: 0, dev: 0, ent: 0, sto: 0, etc: 0,
+      ai: 0, dev: 0, ent: 0, sto: 0, etc: 0, detail: {},
+    };
+    const add = (cat: Cat, v: number) => {
+      col[toChartCat(cat)] += v;
+      col.detail[cat] = (col.detail[cat] ?? 0) + v;
     };
     for (const s of subs) {
-      const cat = toChartCat(s.cat);
       const jpy = toJPY(s.amt, s.c);
+      const cutoff = chargeCutoff(s, now);
+      // 이 월의 청구일 (anchor 일자 기준, 없으면 월초로 근사)
+      const chargeDay = s.anchor
+        ? Math.min(new Date(s.anchor + 'T00:00:00').getDate(), lastDay) : 1;
+      const chargeDate = new Date(d.getFullYear(), d.getMonth(), chargeDay);
+      // 해지·일시정지 이후의 청구는 제외 (과거 기록은 보존)
+      if (cutoff && chargeDate > cutoff) continue;
       if (s.cycle === 'month') {
         // anchor 이전 월에는 청구 없음 (anchor 미상이면 전 기간 청구로 간주)
         if (s.anchor) {
           const a = new Date(s.anchor + 'T00:00:00');
           if (d < new Date(a.getFullYear(), a.getMonth(), 1)) continue;
         }
-        col[cat] += jpy;
+        add(s.cat, jpy);
       } else {
         // 연결제: 갱신월에만 전액. 갱신월을 모르면 /12 균등 배분
         const m = s.anchor
           ? new Date(s.anchor + 'T00:00:00').getMonth()
           : yearNextMonth(s.next);
-        if (m === null) col[cat] += jpy / 12;
-        else if (d.getMonth() === m) col[cat] += jpy;
+        if (m === null) add(s.cat, jpy / 12);
+        else if (d.getMonth() === m) add(s.cat, jpy);
       }
     }
     // 일회성 지출: 결제월에만 '기타'로 포함 (헤드라인 구독료와는 별개)
     for (const o of oneTime) {
       const om = oneTimeMonth(o, now);
       if (om && om.getFullYear() === d.getFullYear() && om.getMonth() === d.getMonth()) {
-        col.etc += toJPY(o.amt, o.c);
+        add('etc', toJPY(o.amt, o.c));
       }
     }
     cols.push(col);
@@ -81,6 +101,7 @@ function clampDate(y: number, m: number, day: number): Date {
 
 /** 다음 결제일 계산 (anchor 우선, 없으면 next 문자열 폴백). null = 판단 불가 */
 export function nextChargeDate(s: SubRow, now = new Date()): Date | null {
+  if (!isActive(s)) return null;      // 해지·일시정지: 다음 결제 없음
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   if (s.anchor) {
     const a = new Date(s.anchor + 'T00:00:00');

@@ -151,6 +151,36 @@ const DICT: Record<string, Record<Lang, string>> = {
   alertMultiN:  { ko: '3일 안에 {n}건 갱신 — {name} {when}', ja: '3日以内に{n}件更新 — {name} {when}', en: '{n} renew within 3 days — {name} {when}' },
   monthlyEquiv: { ko: '월 환산 약 {v}', ja: '月換算 約 {v}', en: '≈ {v}/month' },
   category:     { ko: '카테고리', ja: 'カテゴリ', en: 'Category' },
+  // 토스트 / 확인 다이얼로그
+  addedToast:   { ko: '{name} 등록됨', ja: '{name} を登録しました', en: '{name} added' },
+  savedToast:   { ko: '변경사항 저장됨', ja: '変更を保存しました', en: 'Changes saved' },
+  deletedToast: { ko: '{name} 삭제됨', ja: '{name} を削除しました', en: '{name} deleted' },
+  undo:         { ko: '되돌리기', ja: '元に戻す', en: 'Undo' },
+  // 구독 상태 (해지·일시정지)
+  pauseSub:     { ko: '일시정지', ja: '一時停止', en: 'Pause' },
+  cancelSub:    { ko: '구독 해지', ja: 'サブスク解約', en: 'Cancel subscription' },
+  resumeSub:    { ko: '구독 재개', ja: 'サブスク再開', en: 'Resume subscription' },
+  cancelSubMsg: { ko: "'{name}' 구독을 해지 처리할까요?\n지난 지출 기록은 차트에 그대로 남아요.", ja: '「{name}」を解約済みにしますか？\n過去の支出履歴はチャートに残ります。', en: "Mark '{name}' as canceled?\nPast spending stays in your chart." },
+  statusPaused:   { ko: '일시정지', ja: '一時停止中', en: 'Paused' },
+  statusCanceled: { ko: '해지됨', ja: '解約済み', en: 'Canceled' },
+  canceledToast:  { ko: '{name} 해지 처리됨 — 기록은 차트에 남아요', ja: '{name} を解約済みにしました — 履歴はチャートに残ります', en: '{name} canceled — history stays in your chart' },
+  pausedToast:    { ko: '{name} 일시정지됨', ja: '{name} を一時停止しました', en: '{name} paused' },
+  resumedToast:   { ko: '{name} 재개됨', ja: '{name} を再開しました', en: '{name} resumed' },
+  inactiveTitle:  { ko: '해지·일시정지', ja: '解約・一時停止', en: 'Canceled & paused' },
+  inactiveHint:   { ko: '기록은 차트에 남아요 · 탭하면 재개', ja: '履歴はチャートに残ります · タップで再開', en: 'History kept · tap to resume' },
+  endedOn:        { ko: '{d}까지', ja: '{d}まで', en: 'Until {d}' },
+  // 설정: 데이터 / 계정
+  secData:      { ko: '데이터', ja: 'データ', en: 'Data' },
+  exportCsv:    { ko: 'CSV로 내보내기', ja: 'CSVエクスポート', en: 'Export as CSV' },
+  exportDone:   { ko: 'CSV 파일을 내려받았어요', ja: 'CSVファイルをダウンロードしました', en: 'CSV downloaded' },
+  exportEmpty:  { ko: '내보낼 데이터가 없어요', ja: 'エクスポートするデータがありません', en: 'Nothing to export' },
+  noteData:     { ko: '구독·일회성 지출 전체를 스프레드시트에서 열 수 있는 CSV로 내려받아요.', ja: 'サブスク・単発支出のすべてを表計算ソフトで開けるCSVでダウンロードします。', en: 'Download all subscriptions and one-time expenses as a spreadsheet-ready CSV.' },
+  secAccount:   { ko: '계정', ja: 'アカウント', en: 'Account' },
+  deleteAccount:    { ko: '계정 삭제', ja: 'アカウント削除', en: 'Delete account' },
+  deleteAccountMsg: { ko: '모든 구독·지출 데이터와 계정이 영구 삭제돼요.\n이 작업은 되돌릴 수 없어요.', ja: 'すべてのサブスク・支出データとアカウントが完全に削除されます。\nこの操作は取り消せません。', en: 'All your data and your account will be permanently deleted.\nThis cannot be undone.' },
+  deleteAccountBtn: { ko: '영구 삭제', ja: '完全に削除', en: 'Delete forever' },
+  deleteAccountDone:{ ko: '계정이 삭제되었어요. 이용해주셔서 감사합니다.', ja: 'アカウントを削除しました。ご利用ありがとうございました。', en: 'Your account has been deleted. Thank you.' },
+  noteAccount:  { ko: '삭제 전에 CSV 내보내기로 데이터를 백업해두는 것을 권해요. 보안을 위해 다시 로그인을 요청할 수 있어요.', ja: '削除前にCSVエクスポートでバックアップすることをおすすめします。セキュリティのため再ログインを求める場合があります。', en: 'We recommend exporting a CSV backup first. You may be asked to sign in again for security.' },
 };
 
 interface LangCtx {

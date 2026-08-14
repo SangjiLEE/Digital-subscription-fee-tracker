@@ -3,7 +3,7 @@ import ScanBanner from '@/components/ScanBanner';
 import { fmt, toJPY } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { nextChargeDate } from '@/lib/monthly';
-import { useStore, CATCOLOR, CAT_ORDER, CAT_KEY, type SubRow } from '@/lib/store';
+import { useStore, isActive, CATCOLOR, CAT_ORDER, CAT_KEY, type SubRow, type OneTimeRow } from '@/lib/store';
 
 // 구버전 데이터에 언어별로 박제된 '커스텀' 플랜명 — 표시 시점에 현재 언어로 통일
 const CUSTOM_SENTINELS = ['커스텀', 'カスタム', 'Custom'];
@@ -12,8 +12,11 @@ export const planLabel = (plan: string, t: (k: string) => string) =>
 
 /** 카테고리별 그룹 + 월 환산 소계 (연결제는 /12). 행 탭 = 수정, × = 삭제 */
 export default function SubList() {
-  const { cur, subs, oneTime, openEdit, removeSub, removeOneTime } = useStore();
+  const { cur, subs, oneTime, openEdit, removeSub, removeOneTime,
+    addSub, addOneTime, askConfirm, showToast } = useStore();
   const { t } = useLang();
+  const active = subs.filter(isActive);
+  const inactive = subs.filter(s => !isActive(s));
 
   // 다음 결제일: 저장된 next 문자열 대신 항상 계산값 사용
   const nextLabel = (s: SubRow): string => {
@@ -21,8 +24,20 @@ export default function SubList() {
     return t('nextOn', { d: d ? `${d.getMonth() + 1}/${d.getDate()}` : s.next });
   };
 
-  const del = (s: SubRow) => {
-    if (confirm(t('delSub', { name: s.name }))) removeSub(s.id);
+  // 삭제: 인앱 확인 → 삭제 → 5초 undo 토스트 (undo = 같은 데이터로 재등록)
+  const del = async (s: SubRow) => {
+    if (!(await askConfirm(t('delSub', { name: s.name }), t('delete'), true))) return;
+    const { id: _drop, ...data } = s;
+    if (await removeSub(s.id)) {
+      showToast(t('deletedToast', { name: s.name }), { undo: () => { addSub(data); } });
+    }
+  };
+  const delOne = async (o: OneTimeRow) => {
+    if (!(await askConfirm(t('delOne', { name: o.name }), t('delete'), true))) return;
+    const { id: _drop, ...data } = o;
+    if (await removeOneTime(o.id)) {
+      showToast(t('deletedToast', { name: o.name }), { undo: () => { addOneTime(data); } });
+    }
   };
 
   return (
@@ -32,13 +47,13 @@ export default function SubList() {
       <section>
         <div className="sec-head">
           <h2>{t('activeSubs')}</h2>
-          <span className="hint">{t('activeHint', { n: subs.length })}</span>
+          <span className="hint">{t('activeHint', { n: active.length })}</span>
         </div>
-        {subs.length === 0 && (
+        {active.length === 0 && (
           <div className="sub-card"><div className="renew-empty">{t('emptySubs')}</div></div>
         )}
         {CAT_ORDER.map(cat => {
-          const items = subs.filter(s => s.cat === cat);
+          const items = active.filter(s => s.cat === cat);
           if (!items.length) return null;
           const subtotal = items.reduce(
             (acc, s) => acc + toJPY(s.amt, s.c) / (s.cycle === 'year' ? 12 : 1), 0);
@@ -74,6 +89,33 @@ export default function SubList() {
         })}
       </section>
 
+      {inactive.length > 0 && (
+        <section>
+          <div className="sec-head"><h2>{t('inactiveTitle')}</h2><span className="hint">{t('inactiveHint')}</span></div>
+          <div className="sub-card">
+            {inactive.map(s => (
+              <div className="sub-row inactive" key={s.id}>
+                <button className="row-main" aria-label={`${s.name} ${t('edit')}`}
+                  onClick={() => openEdit(s)}>
+                  <div className="r-icon" style={{ background: CATCOLOR[s.cat] }}>{s.init}</div>
+                  <div className="r-body">
+                    <div className="r-name">{s.name}</div>
+                    <div className="r-meta">
+                      <i className="status-badge">{t(s.status === 'paused' ? 'statusPaused' : 'statusCanceled')}</i>
+                      {' '}{planLabel(s.plan, t)}
+                      {s.endDate && <> · {t('endedOn', { d: s.endDate.slice(5).replace('-', '/') })}</>}
+                    </div>
+                  </div>
+                  <div className="r-right"><div className="r-amt">{fmt(toJPY(s.amt, s.c), cur)}</div></div>
+                </button>
+                <button className="row-del" aria-label={`${s.name} ${t('delete')}`}
+                  onClick={() => del(s)}>×</button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section>
         <div className="sec-head"><h2>{t('oneTimeTitle')}</h2><span className="hint">{t('oneTimeHint')}</span></div>
         <div className="sub-card">
@@ -89,7 +131,7 @@ export default function SubList() {
                 <div className="r-right"><div className="r-amt">{fmt(toJPY(o.amt, o.c), cur)}</div></div>
               </div>
               <button className="row-del" aria-label={`${o.name} ${t('delete')}`}
-                onClick={() => { if (confirm(t('delOne', { name: o.name }))) removeOneTime(o.id); }}>×</button>
+                onClick={() => delOne(o)}>×</button>
             </div>
           ))}
         </div>

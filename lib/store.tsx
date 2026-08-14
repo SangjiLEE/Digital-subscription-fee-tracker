@@ -35,13 +35,18 @@ export const CAT_KEY: Record<Cat, string> = {
   prod: 'catProd', game: 'catGame', ins: 'catIns', etc: 'catEtc',
 };
 
+export type SubStatus = 'active' | 'paused' | 'canceled';
 export interface SubRow {
   id: string;
   name: string; plan: string; amt: number; c: Currency;
   cat: Cat; cycle: 'month' | 'year'; next: string; init: string;
   anchor?: string;               // 최초 결제일 'YYYY-MM-DD' (신규 등록분부터 저장)
   renew?: 'auto' | 'manual';
+  status?: SubStatus;            // 미지정 = active (기존 데이터 호환)
+  endDate?: string;              // 해지·일시정지 시작일 'YYYY-MM-DD' — 이후 청구 없음
 }
+/** 청구가 계속되는 구독인가 (status 미지정 = active) */
+export const isActive = (s: Pick<SubRow, 'status'>) => !s.status || s.status === 'active';
 export interface OneTimeRow {
   id: string;
   name: string; note: string; amt: number; c: Currency; init: string;
@@ -87,16 +92,53 @@ interface Store {
   retryScan: () => void;
   cancelScan: () => void;
   dropScanItem: (it: ScanItem) => void;
+  // 토스트 (성공/에러 + 선택적 undo) 와 인앱 확인 다이얼로그 — confirm()/alert() 대체
+  toast: ToastState | null;
+  showToast: (msg: string, opts?: { kind?: 'ok' | 'err'; undo?: () => void }) => void;
+  dismissToast: () => void;
+  confirmReq: ConfirmReq | null;
+  askConfirm: (msg: string, okLabel: string, danger?: boolean) => Promise<boolean>;
+  answerConfirm: (ok: boolean) => void;
 }
+
+export interface ToastState { msg: string; kind: 'ok' | 'err'; undo?: () => void }
+export interface ConfirmReq { msg: string; okLabel: string; danger: boolean }
 
 const Ctx = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { t } = useLang();
+
+  // 토스트: undo 있는 삭제 알림은 5초, 일반 알림은 2.6초 후 자동 소멸
+  const [toast, setToast] = useState<ToastState | null>(null);
+  const toastSeq = useRef(0);
+  const showToast: Store['showToast'] = (msg, opts) => {
+    const seq = ++toastSeq.current;
+    setToast({ msg, kind: opts?.kind ?? 'ok', undo: opts?.undo });
+    setTimeout(() => { if (seq === toastSeq.current) setToast(null); }, opts?.undo ? 5000 : 2600);
+  };
+  const dismissToast = () => { toastSeq.current++; setToast(null); };
+
+  // 확인 다이얼로그: askConfirm → Feedback 컴포넌트가 렌더 → answerConfirm으로 resolve
+  const [confirmReq, setConfirmReq] = useState<ConfirmReq | null>(null);
+  const confirmResolve = useRef<((v: boolean) => void) | null>(null);
+  const askConfirm: Store['askConfirm'] = (msg, okLabel, danger = false) => {
+    confirmResolve.current?.(false);           // 중첩 호출 시 이전 요청은 취소 처리
+    return new Promise<boolean>(resolve => {
+      confirmResolve.current = resolve;
+      setConfirmReq({ msg, okLabel, danger });
+    });
+  };
+  const answerConfirm = (ok: boolean) => {
+    setConfirmReq(null);
+    confirmResolve.current?.(ok);
+    confirmResolve.current = null;
+  };
+
   const fail = (e: { code?: string }) => {
     console.error('저장소 작업 실패:', e?.code);
-    alert(t('opFail'));
+    showToast(t('opFail'), { kind: 'err' });
   };
   const [cur, setCurState] = useState<Currency>('JPY');
   // 표시 통화: 기기에 저장 (홈 토글·설정 화면 공용)
@@ -229,6 +271,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       modalOpen, setModalOpen: setModalOpenWrap,
       editing, openEdit, draft, openDraft,
       scanBusy, scanItems, scanNotice, startScan, retryScan, cancelScan, dropScanItem,
+      toast, showToast, dismissToast, confirmReq, askConfirm, answerConfirm,
     }}>{children}</Ctx.Provider>
   );
 }

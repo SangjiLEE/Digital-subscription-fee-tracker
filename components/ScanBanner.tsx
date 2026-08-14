@@ -25,7 +25,7 @@ function toAnchor(it: ScanItem): string | undefined {
  * 업로드 시작은 + 버튼 메뉴(TabNav)에서.
  */
 export default function ScanBanner() {
-  const { openDraft, addSub, scanItems, dropScanItem } = useStore();
+  const { openDraft, addSub, scanItems, dropScanItem, showToast } = useStore();
   const { t } = useLang();
   const [savingIdx, setSavingIdx] = useState<number | null>(null);
 
@@ -50,7 +50,10 @@ export default function ScanBanner() {
     setSavingIdx(idx);
     const ok = await addSub(toSub(it));
     setSavingIdx(null);
-    if (ok) dropScanItem(it);    // 실패 시 카드 유지 (알림은 store가 표시)
+    if (ok) {
+      dropScanItem(it);    // 실패 시 카드 유지 (알림은 store가 표시)
+      showToast(t('addedToast', { name: it.name }));
+    }
   };
   const edit = (it: ScanItem) => {
     const s = toSub(it);

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SYM, fmt, toJPY } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
-import { useStore, CAT_ORDER, CAT_KEY, type Cat, type Region } from '@/lib/store';
+import { useStore, isActive, CAT_ORDER, CAT_KEY, type Cat, type Region, type SubStatus } from '@/lib/store';
 import type { Currency } from '@/lib/types';
 
 interface CatalogPlan { n: string; amt: number; c: Currency; }
@@ -52,7 +52,8 @@ const todayStr = () => {
 };
 
 export default function AddModal() {
-  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft, region, cur } = useStore();
+  const { modalOpen, setModalOpen, addSub, addOneTime, editing, updateSub, draft, region, cur,
+    showToast, askConfirm } = useStore();
   const { t } = useLang();
   const router = useRouter();
 
@@ -110,17 +111,33 @@ export default function AddModal() {
   const pickSvc = (s: CatalogSvc) => { setSvc(s); setPlan(null); setName(s.name); setCatSel(s.cat); };
   const pickPlan = (p: CatalogPlan) => { setPlan(p); setAmt(String(p.amt)); setCurSel(p.c); };
 
+  // 해지 / 일시정지 / 재개 — 편집 모드 전용 (기록 보존, 미래 청구만 중단)
+  const setStatus = async (status: SubStatus) => {
+    if (!editing || saving) return;
+    if (status === 'canceled' &&
+      !(await askConfirm(t('cancelSubMsg', { name: editing.name }), t('cancelSub'), true))) return;
+    setSaving(true);
+    const ok = await updateSub(editing.id,
+      status === 'active' ? { status } : { status, endDate: todayStr() });
+    setSaving(false);
+    if (ok) {
+      showToast(t(status === 'canceled' ? 'canceledToast' : status === 'paused' ? 'pausedToast' : 'resumedToast',
+        { name: editing.name }));
+      close();
+    }
+  };
+
   const save = async () => {
     if (saving) return;
     const amount = parseFloat(amt);
-    if (!name.trim() || !amount) { alert(t('validateMsg')); return; }
+    if (!name.trim() || !amount) { showToast(t('validateMsg'), { kind: 'err' }); return; }
     const d = new Date(date + 'T00:00:00');
     if (renew === 'one') {
       setSaving(true);
       const ok = await addOneTime({ name: name.trim(), note: t('paidNote', { d: `${d.getMonth() + 1}/${d.getDate()}` }),
         amt: amount, c: curSel, init: name.trim()[0].toUpperCase(), date });
       setSaving(false);
-      if (ok) { close(); router.push('/list'); }
+      if (ok) { showToast(t('addedToast', { name: name.trim() })); close(); router.push('/list'); }
       return;
     }
     const nm = new Date(d);
@@ -142,7 +159,10 @@ export default function AddModal() {
         })
       : await addSub({ ...base, plan: plan ? plan.n : '', cat: catSel });
     setSaving(false);
-    if (ok) { close(); router.push('/list'); }
+    if (ok) {
+      showToast(editing ? t('savedToast') : t('addedToast', { name: name.trim() }));
+      close(); router.push('/list');
+    }
   };
 
   return (
@@ -231,6 +251,19 @@ export default function AddModal() {
         </div>
 
         <button className="m-save" onClick={save} disabled={saving || invalid}>{saving ? t('saving') : editing ? t('saveEdit') : t('saveNew')}</button>
+
+        {editing && (
+          <div className="m-status">
+            {isActive(editing) ? (
+              <>
+                <button onClick={() => setStatus('paused')} disabled={saving}>{t('pauseSub')}</button>
+                <button className="danger" onClick={() => setStatus('canceled')} disabled={saving}>{t('cancelSub')}</button>
+              </>
+            ) : (
+              <button onClick={() => setStatus('active')} disabled={saving}>{t('resumeSub')}</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

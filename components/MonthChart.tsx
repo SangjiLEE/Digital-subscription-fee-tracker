@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { fmt } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { computeMonths, colTotal } from '@/lib/monthly';
-import { useStore, CATCOLOR } from '@/lib/store';
+import { useStore, CATCOLOR, CAT_ORDER, CAT_KEY } from '@/lib/store';
 
 const CATS = [
   ['ai', 'catAi'], ['dev', 'catDev'], ['ent', 'catEnt'], ['sto', 'catStoShort'], ['etc', 'catEtc'],
@@ -112,12 +112,16 @@ export default function MonthChart() {
           </div>
         )}
         {delta === 0 && <div className="md-delta flat">{t('deltaFlat')}</div>}
-        {CATS.map(([k, key]) => (
-          <div className="md-row" key={k}>
-            <span><i className="dot" style={{ background: CATCOLOR[k] }} />{t(key)}</span>
-            <b>{fmt(m[k], cur)}</b>
+        {/* 상세는 접기 전 원본 카테고리 기준 (차트 막대는 4색+기타 유지) */}
+        {CAT_ORDER.filter(c => (m.detail[c] ?? 0) > 0).map(c => (
+          <div className="md-row" key={c}>
+            <span><i className="dot" style={{ background: CATCOLOR[c] }} />{t(CAT_KEY[c])}</span>
+            <b>{fmt(m.detail[c]!, cur)}</b>
           </div>
         ))}
+        {total === 0 && (
+          <div className="md-row"><span>—</span><b>{fmt(0, cur)}</b></div>
+        )}
       </div>
 
       <div className="legend">

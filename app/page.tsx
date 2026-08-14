@@ -6,7 +6,7 @@ import RenewList from '@/components/RenewList';
 import { fmt } from '@/lib/fx';
 import { useLang } from '@/lib/i18n';
 import { computeMonths, colTotal, daysUntil, nextChargeDate } from '@/lib/monthly';
-import { useStore } from '@/lib/store';
+import { useStore, isActive } from '@/lib/store';
 import { useMounted } from '@/lib/useMounted';
 
 export default function Home() {
@@ -50,7 +50,7 @@ export default function Home() {
       <div className="total">
         <div className="label">{nowMonth && t('totalLabel', { mon: mon(nowMonth.m) })}</div>
         <div className="amount">{fmt(total, cur)}</div>
-        <div className="sub">{t('countsLine', { n: subs.length, k: oneTime.length })}</div>
+        <div className="sub">{t('countsLine', { n: subs.filter(isActive).length, k: oneTime.length })}</div>
         <CurrencyToggle />
       </div>
 
