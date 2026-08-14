@@ -47,7 +47,9 @@
   }
   .login-btn:focus-visible{outline:2px solid var(--c-ai);outline-offset:2px}
   .overlay.center{align-items:center;padding:20px}
-  .welcome-card{border-radius:18px;max-width:340px;text-align:center;padding:28px 22px 16px}
+  /* .modal(바텀시트, 상단만 둥긂)보다 뒤 규칙에 지지 않도록 specificity를 올려
+     중앙 카드는 네 모서리 모두 둥글게 */
+  .modal.welcome-card{border-radius:18px;max-width:340px;text-align:center;padding:28px 22px 16px}
   .w-mark{font-family:var(--num);font-weight:700;font-size:13px;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:12px}
   .w-title{font-size:20px;line-height:1.4;margin-bottom:8px}
   .w-desc{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-bottom:18px}
@@ -301,7 +303,11 @@
   .scan-btn:hover{border-color:var(--c-ai)}
   .scan-btn:disabled{color:var(--ink-soft);cursor:progress}
   .scan-notice{font-size:12px;color:var(--ink-soft);padding:10px 4px 0;text-align:center;white-space:pre-line;word-break:break-all}
-  .scan-item{margin-top:10px}
+  /* 좁은 폭에서 버튼이 텍스트를 짓누르지 않게: 텍스트는 240px을 지키고
+     모자라면 버튼 줄이 아래로 내려간다. keep-all로 '결제' 같은 단어 중간 줄바꿈 방지 */
+  .scan-item{margin-top:10px;flex-wrap:wrap}
+  .scan-item > span:first-child{flex:1 1 240px;min-width:0;word-break:keep-all}
+  .scan-item .scan-acts{margin-left:auto}
   .scan-conf{color:var(--ink-soft);font-size:10px;margin-left:4px}
   .scan-acts{display:flex;gap:6px}
   .mini.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
@@ -470,7 +476,8 @@
 
   /* ── 인앱 확인 다이얼로그 (confirm() 대체) ── */
   .confirm-overlay{z-index:60}
-  .confirm-modal{max-width:340px;width:100%}
+  /* 중앙 표시라 바텀시트용 상단만 둥근 .modal 기본값 대신 네 모서리 모두 둥글게 */
+  .confirm-modal{max-width:340px;width:100%;border-radius:20px}
   .confirm-modal p{font-size:14.5px;line-height:1.55;margin:4px 0 18px;white-space:pre-line}
   .c-actions{display:flex;gap:8px}
   .c-actions button{
